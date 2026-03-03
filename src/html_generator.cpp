@@ -1781,6 +1781,19 @@ Authorization: Bearer &lt;your-token&gt;  <span style="color: #52525b;">// Only 
 <span style="color: #52525b;">// Simply set the endpoint URL and send your GraphQL query</span></pre>
                     </div>
 
+                    <div style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(74, 222, 128, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(74, 222, 128, 0.2);">
+                        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <div style="font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 5px;">Ready-to-use Postman Collection</div>
+                                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">Import all queries and mutations into Postman with one click</div>
+                            </div>
+                            <a href="/graphql.json" download style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%); color: #000; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; transition: transform 0.2s, box-shadow 0.2s;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                Download Collection
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="section-title" style="margin-top: 25px;">Authentication Flow</div>
                     <p style="color: rgba(255,255,255,0.6); margin-bottom: 15px; line-height: 1.6;">
                         The API uses JWT (JSON Web Tokens) for authentication. Here's the complete flow:

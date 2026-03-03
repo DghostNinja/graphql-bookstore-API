@@ -551,7 +551,7 @@ The web documentation is organized as follows:
 | **Welcome** | Introduction to the API, purpose, business flow, default credentials |
 | **Local Installation** | Step-by-step guide to run the API locally |
 | **Docker Installation** | Quick Docker setup guide |
-| **How To Send Requests** | API endpoints, request structure, cURL, JavaScript, Postman examples |
+| **How To Send Requests** | API endpoints, request structure, cURL, JavaScript, Postman examples, download collection |
 | **Data Types & Schema** | Main data types, field selection, GraphQL introspection |
 | **Queries** | All available queries (public and protected) |
 | **Mutations** | All available mutations grouped by category |
@@ -561,6 +561,13 @@ The web documentation is organized as follows:
 **API Endpoints:**
 - Local: `http://localhost:4000/graphql`
 - Live: `https://api.graphqlbook.store/graphql`
+
+**Postman Collection:**
+A ready-to-use Postman collection is available at `/graphql.json`. Download it directly from the UI in the "How To Send Requests" section, or access it at:
+- Local: `http://localhost:4000/graphql.json`
+- Live: `https://api.graphqlbook.store/graphql.json`
+
+The collection includes all public queries and mutations with input variables. Import it into Postman and set the `base_url` variable, then fill in input variables (username, password, bookId, etc.) before each request.
 382: 
 383: **API Link Bar Features:**
 384: - Glass-styled icon with green gradient and pulse animation effect
@@ -670,6 +677,9 @@ Deploy as Web App with "Anyone" access to allow anonymous submissions.400:
 447:   --data-binary @/tmp/test_sql.json
 448: ```
 449: 
+**Alternative: Use Postman Collection**
+Instead of curl, download the Postman collection from `/graphql.json` and import it into Postman. Set the `base_url` variable to your server URL, fill in the input variables for each request, and set `token` after logging in.
+
 450: ### SSRF URL Whitelist
 451: Allowed prefixes for `_fetchExternalResource`:
 452: - `http://example.com`

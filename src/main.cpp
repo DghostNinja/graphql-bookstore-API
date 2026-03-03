@@ -3,6 +3,7 @@
 #include <cstring>
 #include <map>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <ctime>
 #include <csignal>
@@ -284,6 +285,7 @@ int main() {
         
         bool isGetRequest = (request.find("GET ") == 0);
         bool isHealthRequest = (request.find("GET /health") == 0);
+        bool isPostmanRequest = (request.find("GET /graphql.json") == 0);
         bool isPostRequest = (request.find("POST ") == 0 && request.find("/graphql") != string::npos);
         bool isOptionsRequest = (request.find("OPTIONS") == 0);
 
@@ -296,6 +298,23 @@ int main() {
 
         if (isHealthRequest) {
             string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+            send(clientSocket, response.c_str(), response.length(), 0);
+            close(clientSocket);
+            continue;
+        }
+
+        if (isPostmanRequest) {
+            ifstream postmanFile("graphql.json");
+            if (!postmanFile) {
+                string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 9\r\n\r\nNot Found";
+                send(clientSocket, response.c_str(), response.length(), 0);
+                close(clientSocket);
+                continue;
+            }
+            stringstream buffer;
+            buffer << postmanFile.rdbuf();
+            string postmanContent = buffer.str();
+            string response = "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nContent-Disposition: attachment; filename=\"graphql.json\"\r\nContent-Length: " + to_string(postmanContent.length()) + "\r\n\r\n" + postmanContent;
             send(clientSocket, response.c_str(), response.length(), 0);
             close(clientSocket);
             continue;
