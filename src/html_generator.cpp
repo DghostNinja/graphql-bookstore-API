@@ -1865,7 +1865,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                             <button class="copy-button" onclick="copyToClipboard('local-setup')">Copy</button>
                         </div>
                         <div class="code-block">
-                            <pre id="local-setup">git clone https://github.com/DghostNinja/GraphQL-Bookstore.git
+                            <pre id="local-setup">git clone https://github.com/DghostNinja/graphql-bookstore-API.git
 cd GraphQL-Bookstore
 ./build.sh</pre>
                         </div>
@@ -1909,7 +1909,7 @@ cd GraphQL-Bookstore
                             <button class="copy-button" onclick="copyToClipboard('docker-quick')">Copy</button>
                         </div>
                         <div class="code-block">
-                            <pre id="docker-quick">git clone https://github.com/DghostNinja/GraphQL-Bookstore.git
+                            <pre id="docker-quick">git clone https://github.com/DghostNinja/graphql-bookstore-API.git
 cd GraphQL-Bookstore
 docker-compose up --build</pre>
                         </div>
