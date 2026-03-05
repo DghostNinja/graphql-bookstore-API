@@ -1,0 +1,29 @@
+# Compiled binaries
+bookstore-server
+graphql_server
+test_db
+test_query_extract
+test_regex
+
+# Build directory (cmake generated files)
+build/
+
+# MCP server (keep these files)
+mcp/node_modules/
+mcp/package-lock.json
+
+# Test temp files
+test_login.json
+
+# OS files
+*.o
+*.a
+*.so
+*.dylib
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
