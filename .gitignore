@@ -27,7 +27,7 @@ test_login.json
 *~
 
 AGENTS.md
-.github/workflows/
+.github
 flow.sh
 test_db
 test_login
