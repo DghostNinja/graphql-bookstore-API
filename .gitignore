@@ -27,3 +27,6 @@ test_login.json
 *.swp
 *.swo
 *~
+
+AGENTS.md
+.github/workflows
