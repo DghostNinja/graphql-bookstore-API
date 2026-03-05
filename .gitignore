@@ -1,9 +1,7 @@
 # Compiled binaries
 bookstore-server
 graphql_server
-test_db
-test_query_extract
-test_regex
+
 
 # Build directory (cmake generated files)
 build/
@@ -29,4 +27,9 @@ test_login.json
 *~
 
 AGENTS.md
-.github
+.github/workflows/
+flow.sh
+test_db
+test_login
+test_query_extract
+test_regex
