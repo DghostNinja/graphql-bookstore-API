@@ -266,7 +266,6 @@ Contributions are welcome! This is a learning environment where the structure an
 
 ### Contributors
 
-- [anomalyco](https://github.com/anomalyco)
 - [kizerh](https://github.com/kizerh)
 
 ## License
