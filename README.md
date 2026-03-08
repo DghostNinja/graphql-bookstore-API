@@ -99,32 +99,6 @@ sudo -u postgres psql -f scripts/init_database.sql
 ./bookstore-server
 ```
 
-### GitHub Actions & Docker Hub
-
-This repository includes automated Docker image building and pushing to Docker Hub via GitHub Actions.
-
-**Workflow triggers:**
-- Push to `main` or `master` branches
-- New version tags (e.g., `v1.0.0`)
-
-**Required secrets (configure in repository Settings → Secrets and variables → Actions):**
-- `DOCKER_USERNAME` - Your Docker Hub username
-- `DOCKER_PASSWORD` - Docker Hub password or access token
-
-**Manual build and push:**
-```bash
-# Build locally
-docker build -t graphql:latest .
-
-# Login to Docker Hub
-docker login
-
-# Tag with your username
-docker tag graphql:latest $DOCKER_USERNAME/graphql:latest
-
-# Push to Docker Hub
-docker push $DOCKER_USERNAME/graphql:latest
-```
 
 ## API Usage
 
