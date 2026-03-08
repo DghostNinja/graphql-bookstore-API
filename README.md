@@ -151,25 +151,6 @@ mutation {
 }
 ```
 
-## Testing
-
-A comprehensive test suite is included:
-
-```bash
-# Start the server first
-./bookstore-server
-
-# In another terminal, run tests
-./test_api.sh
-```
-
-### User Flow Tests
-
-```bash
-./flow.sh
-```
-
-Tests the complete user journey through the API including registration, login, browsing books, cart management, orders, reviews, and webhooks.
 
 ## OWASP API Security Top 10 Coverage
 

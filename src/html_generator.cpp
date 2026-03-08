@@ -1878,7 +1878,7 @@ cd GraphQL-Bookstore
 
                     <div class="section-title" style="margin-top: 20px;">Server URLs</div>
                     <div class="code-block">
-                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">UI Guide:</span>   http://localhost:4000
+                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">DOCS:</span>   http://localhost:4000
 <span style="color: #60a5fa;">API Endpoint:</span>    http://localhost:4000/graphql</pre>
                     </div>
 
@@ -1917,7 +1917,7 @@ docker-compose up --build</pre>
 
                     <div class="section-title" style="margin-top: 20px;">Server URLs</div>
                     <div class="code-block">
-                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">UI Guide:</span>   http://localhost:4000
+                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">DOCS:</span>   http://localhost:4000
 <span style="color: #60a5fa;">API Endpoint:</span>    http://localhost:4000/graphql</pre>
                     </div>
 
