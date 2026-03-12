@@ -965,6 +965,10 @@ string generateLandingHTML() {
             height: 36px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            position: relative;
+        }
+        .footer-links a svg {
         }
         .footer-links a:hover {
             color: #fff;
