@@ -1572,6 +1572,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                         response << "\"orderId\":\"" << orderId << "\",";
                         response << "\"orderNumber\":\"" << orderNumber << "\",";
                         response << "\"totalAmount\":" << total << ",";
+                        response << "\"warning\":\"Do not use real card details - this is a test environment\",";
                         response << "\"payment\":" << paymentResult;
                         response << "}";
                         firstField = false;
@@ -1720,6 +1721,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                         response << "\"success\":true,";
                         response << "\"orderId\":\"" << orderId << "\",";
                         response << "\"totalAmount\":" << total << ",";
+                        response << "\"warning\":\"Do not use real card details - this is a test environment\",";
                         response << "\"payment\":" << paymentResult;
                         response << "}";
                         firstField = false;

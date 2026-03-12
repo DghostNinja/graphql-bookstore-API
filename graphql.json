@@ -502,7 +502,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"mutation { checkout { success orderId totalAmount } }\"}"
+              "raw": "{\"query\":\"mutation { checkout(cardNumber: \\\"{{cardNumber}}\\\", expiry: \\\"{{cardExpiry}}\\\", cvv: \\\"{{cardCvv}}\\\") { success orderId orderNumber totalAmount warning } }\"}"
             }
           }
         },
@@ -523,7 +523,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"mutation { purchaseCart(cardNumber: \\\"{{cardNumber}}\\\", expiry: \\\"{{cardExpiry}}\\\", cvv: \\\"{{cardCvv}}\\\") { success message transactionId orderId } }\"}"
+              "raw": "{\"query\":\"mutation { purchaseCart(cardNumber: \\\"{{cardNumber}}\\\", expiry: \\\"{{cardExpiry}}\\\", cvv: \\\"{{cardCvv}}\\\") { success message transactionId orderId totalAmount warning } }\"}"
             }
           }
         },

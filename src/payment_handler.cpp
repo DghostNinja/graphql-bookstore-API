@@ -86,11 +86,6 @@ std::string processPayment(const std::string& userId, const std::string& orderId
     std::string paymentMessage = "";
     std::string paymentStatus = "failed";
 
-    // Validate card number belongs to vulnbank.org (simple check for now)
-    if (cardNumber.length() < 5 || cardNumber.substr(0, 4) != "VBNK") { // Example: VBNK123...
-        return "{\"success\":false, \"message\":\"Only vulnbank.org cards (starting with VBNK) are accepted.\"}";
-    }
-
     if (chargeVulnBankCard(cardNumber, expiry, cvv, totalAmount, transactionId, paymentMessage)) {
         paymentStatus = "completed";
     }
@@ -120,7 +115,7 @@ std::string processPayment(const std::string& userId, const std::string& orderId
         }
         PQclear(updateRes);
 
-        return "{\"success\":true, \"message\":\"Payment successful and recorded.\", \"transactionId\":\"" + escapeJson(transactionId) + "\"}";
+        return "{\"success\":true, \"message\":\"Payment successful and recorded. WARNING: Do not use real card details - this is a test environment.\", \"transactionId\":\"" + escapeJson(transactionId) + "\"}";
     } else {
         return "{\"success\":false, \"message\":\"" + escapeJson(paymentMessage) + "\"}";
     }
