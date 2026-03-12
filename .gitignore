@@ -1,0 +1,51 @@
+# Compiled binaries
+bookstore-server
+graphql_server
+test_api.sh
+test_db.cpp
+test_query_extract.cpp
+test_regex.cpp
+
+
+# Build directory (cmake generated files)
+build/
+
+# MCP server (keep these files)
+mcp/node_modules/
+mcp/package-lock.json
+
+# Test temp files
+test_login.json
+
+# OS files
+*.o
+*.a
+*.so
+*.dylib
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+AGENTS.md
+.cache/
+.github
+flow.sh
+test_db
+test_login
+test_query_extract
+test_regex
+test_mcp.sh
+list.md
+fly.toml
+deploy-fly.sh
+introspection_test.sh
+GRAPHQL_SCHEMA.md
+COMPLETION_SUMMARY.md
+QUICKSTART.md
+INTROSPECTION_GUIDE.md
+IMPLEMENTATION_COMPLETE.md
+VULNERABILITIES.md
