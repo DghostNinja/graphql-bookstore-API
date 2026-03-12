@@ -23,7 +23,7 @@ const { ListResourcesRequestSchema } = await import(join(__dirname, 'node_module
 const { ListToolsRequestSchema } = await import(join(__dirname, 'node_modules/@modelcontextprotocol/sdk/dist/types.js'));
 const { ReadResourceRequestSchema } = await import(join(__dirname, 'node_modules/@modelcontextprotocol/sdk/dist/types.js'));
 
-const API_URL = process.env.API_URL || 'http://localhost:4000/graphql';
+const API_URL = process.env.API_URL || 'http://127.0.0.1:4000/graphql';
 const DEFAULT_USERNAME = 'admin';
 const DEFAULT_PASSWORD = 'password123';
 
@@ -57,15 +57,15 @@ class BookstoreMCPClient {
 
   async login(username = DEFAULT_USERNAME, password = DEFAULT_PASSWORD) {
     const query = `
-      mutation Login($username: String String!) {
-       !, $password: login(username: $username, password: $password) {
+      mutation {
+        login(username: "${username}", password: "${password}") {
           success
           token
           message
         }
       }
     `;
-    const data = await this._execute(query, { username, password });
+    const data = await this._execute(query);
     if (data.login.success) {
       this.token = data.login.token;
     }
@@ -74,15 +74,15 @@ class BookstoreMCPClient {
 
   async register(username, firstName, lastName, password) {
     const query = `
-      mutation Register($username: String!, $firstName: String!, $lastName: String!, $password: String!) {
-        register(username: $username, firstName: $firstName, lastName: $lastName, password: $password) {
+      mutation {
+        register(username: "${username}", firstName: "${firstName}", lastName: "${lastName}", password: "${password}") {
           success
           message
           userId
         }
       }
     `;
-    return this._execute(query, { username, firstName, lastName, password });
+    return this._execute(query);
   }
 
   async me() {
@@ -101,9 +101,10 @@ class BookstoreMCPClient {
   }
 
   async books(search = '', categoryId = 0) {
+    const searchStr = search ? `"${search}"` : '""';
     const query = `
-      query Books($search: String, $categoryId: Int) {
-        books(search: $search, categoryId: $categoryId) {
+      query Books {
+        books(search: ${searchStr}, categoryId: ${categoryId}) {
           id
           title
           author
@@ -113,13 +114,13 @@ class BookstoreMCPClient {
         }
       }
     `;
-    return this._execute(query, { search, categoryId });
+    return this._execute(query);
   }
 
   async book(id) {
     const query = `
-      query Book($id: Int!) {
-        book(id: $id) {
+      query Book {
+        book(id: ${id}) {
           id
           title
           author
@@ -155,26 +156,26 @@ class BookstoreMCPClient {
 
   async addToCart(bookId, quantity = 1) {
     const query = `
-      mutation AddToCart($bookId: Int!, $quantity: Int!) {
-        addToCart(bookId: $bookId, quantity: $quantity) {
+      mutation {
+        addToCart(bookId: ${bookId}, quantity: ${quantity}) {
           success
           message
         }
       }
     `;
-    return this._execute(query, { bookId, quantity });
+    return this._execute(query);
   }
 
   async removeFromCart(bookId) {
     const query = `
-      mutation RemoveFromCart($bookId: Int!) {
-        removeFromCart(bookId: $bookId) {
+      mutation {
+        removeFromCart(bookId: ${bookId}) {
           success
           message
         }
       }
     `;
-    return this._execute(query, { bookId });
+    return this._execute(query);
   }
 
   async orders() {
@@ -199,7 +200,7 @@ class BookstoreMCPClient {
 
   async createOrder() {
     const query = `
-      mutation CreateOrder {
+      mutation {
         createOrder {
           success
           orderId
@@ -213,58 +214,58 @@ class BookstoreMCPClient {
 
   async purchaseCart(cardNumber, expiry, cvv) {
     const query = `
-      mutation PurchaseCart($cardNumber: String!, $expiry: String!, $cvv: String!) {
-        purchaseCart(cardNumber: $cardNumber, expiry: $expiry, cvv: $cvv) {
+      mutation {
+        purchaseCart(cardNumber: "${cardNumber}", expiry: "${expiry}", cvv: "${cvv}") {
           success
           orderId
           message
         }
       }
     `;
-    return this._execute(query, { cardNumber, expiry, cvv });
+    return this._execute(query);
   }
 
   async cancelOrder(orderId) {
     const query = `
-      mutation CancelOrder($orderId: String!) {
-        cancelOrder(orderId: $orderId) {
+      mutation {
+        cancelOrder(orderId: "${orderId}") {
           success
           message
         }
       }
     `;
-    return this._execute(query, { orderId });
+    return this._execute(query);
   }
 
   async createReview(bookId, rating, comment) {
     const query = `
-      mutation CreateReview($bookId: Int!, $rating: Int!, $comment: String!) {
-        createReview(bookId: $bookId, rating: $rating, comment: $comment) {
+      mutation {
+        createReview(bookId: ${bookId}, rating: ${rating}, comment: "${comment}") {
           success
           reviewId
           message
         }
       }
     `;
-    return this._execute(query, { bookId, rating, comment });
+    return this._execute(query);
   }
 
   async deleteReview(reviewId) {
     const query = `
-      mutation DeleteReview($reviewId: Int!) {
-        deleteReview(reviewId: $reviewId) {
+      mutation {
+        deleteReview(reviewId: ${reviewId}) {
           success
           message
         }
       }
     `;
-    return this._execute(query, { reviewId });
+    return this._execute(query);
   }
 
   async bookReviews(bookId) {
     const query = `
-      query BookReviews($bookId: Int!) {
-        bookReviews(bookId: $bookId) {
+      query BookReviews {
+        bookReviews(bookId: ${bookId}) {
           id
           userId
           rating
@@ -273,7 +274,7 @@ class BookstoreMCPClient {
         }
       }
     `;
-    return this._execute(query, { bookId });
+    return this._execute(query);
   }
 
   async myReviews() {
@@ -293,14 +294,14 @@ class BookstoreMCPClient {
 
   async updateProfile(firstName, lastName) {
     const query = `
-      mutation UpdateProfile($firstName: String, $lastName: String) {
-        updateProfile(firstName: $firstName, lastName: $lastName) {
+      mutation {
+        updateProfile(firstName: "${firstName}", lastName: "${lastName}") {
           success
           message
         }
       }
     `;
-    return this._execute(query, { firstName, lastName });
+    return this._execute(query);
   }
 
   async searchBooks(query) {
@@ -309,28 +310,29 @@ class BookstoreMCPClient {
 
   async applyCoupon(code) {
     const query = `
-      mutation ApplyCoupon($code: String!) {
-        applyCoupon(code: $code) {
+      mutation {
+        applyCoupon(code: "${code}") {
           success
           message
           discount
         }
       }
     `;
-    return this._execute(query, { code });
+    return this._execute(query);
   }
 
   async registerWebhook(url, events, secret = '') {
+    const eventsStr = '["' + events.join('","') + '"]';
     const query = `
-      mutation RegisterWebhook($url: String!, $events: [String]!, $secret: String) {
-        registerWebhook(url: $url, events: $events, secret: $secret) {
+      mutation {
+        registerWebhook(url: "${url}", events: ${eventsStr}, secret: "${secret}") {
           success
           webhookId
           message
         }
       }
     `;
-    return this._execute(query, { url, events, secret });
+    return this._execute(query);
   }
 
   async webhooks() {
@@ -349,14 +351,14 @@ class BookstoreMCPClient {
 
   async testWebhook(webhookId) {
     const query = `
-      mutation TestWebhook($webhookId: Int!) {
-        testWebhook(webhookId: $webhookId) {
+      mutation {
+        testWebhook(webhookId: ${webhookId}) {
           success
           message
         }
       }
     `;
-    return this._execute(query, { webhookId });
+    return this._execute(query);
   }
 
   async adminStats() {
