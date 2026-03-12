@@ -1609,7 +1609,7 @@ string generateLandingHTML() {
                     </p>
                     <div class="code-block">
                         <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">Local Development:</span>  http://localhost:4000/graphql
-<span style="color: #60a5fa;">Live URL:</span>     https://api.graphqlbook.store/graphql
+<span style="color: #60a5fa;">Live URL:</span> https://api.graphqlbook.store/graphql
 
 <span style="color: #52525b;">// All examples below use localhost. Simply replace with the live URL when ready.</span></pre>
                     </div>
@@ -1878,8 +1878,8 @@ cd GraphQL-Bookstore
 
                     <div class="section-title" style="margin-top: 20px;">Server URLs</div>
                     <div class="code-block">
-                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">DOCS:</span>   http://localhost:4000
-<span style="color: #60a5fa;">API Endpoint:</span>    http://localhost:4000/graphql</pre>
+                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">DOCS:</span> http://localhost:4000
+<span style="color: #60a5fa;">API Endpoint:</span> http://localhost:4000/graphql</pre>
                     </div>
 
                     <div class="doc-nav">
@@ -1917,8 +1917,8 @@ docker-compose up --build</pre>
 
                     <div class="section-title" style="margin-top: 20px;">Server URLs</div>
                     <div class="code-block">
-                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">DOCS:</span>   http://localhost:4000
-<span style="color: #60a5fa;">API Endpoint:</span>    http://localhost:4000/graphql</pre>
+                        <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">DOCS:</span> http://localhost:4000
+<span style="color: #60a5fa;">API Endpoint:</span> http://localhost:4000/graphql</pre>
                     </div>
 
                     <div class="section-title" style="margin-top: 20px;">Stop the Server</div>
