@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY src/ src/
+COPY graphql.json .
+COPY scripts/ scripts/
 
 RUN g++ -std=c++17 -pthread -o bookstore-server src/*.cpp -lpq -ljwt -lcurl -lssl -lcrypto
 

@@ -36,6 +36,29 @@
 
 using namespace std;
 
+string findFile(const string& filename) {
+    vector<string> searchPaths = {
+        filename,
+        "./" + filename,
+        "/app/" + filename,
+        "/app/../" + filename,
+    };
+    
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd))) {
+        searchPaths.push_back(string(cwd) + "/" + filename);
+        searchPaths.push_back(string(cwd) + "/../" + filename);
+    }
+    
+    for (const auto& path : searchPaths) {
+        ifstream testFile(path);
+        if (testFile) {
+            return path;
+        }
+    }
+    return "";
+}
+
 void signalHandler(int signal) {
     cout << "\nShutting down server..." << endl;
     if (dbConn) PQfinish(dbConn);
@@ -304,8 +327,10 @@ int main() {
         }
 
         if (isPostmanRequest) {
-            ifstream postmanFile("graphql.json");
+            string filePath = findFile("graphql.json");
+            ifstream postmanFile(filePath);
             if (!postmanFile) {
+                cerr << "[POSTMAN] File not found, searched paths for graphql.json" << endl;
                 string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 9\r\n\r\nNot Found";
                 send(clientSocket, response.c_str(), response.length(), 0);
                 close(clientSocket);
