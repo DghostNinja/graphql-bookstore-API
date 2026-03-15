@@ -3036,7 +3036,7 @@ API_URL=https://api.graphqlbook.store/graphql npm start</pre>
         }
 
         function copyApiLink() {
-            var link = "http://api.graphqlbook.store/graphql";
+            var link = "https://api.graphqlbook.store/graphql";
             navigator.clipboard.writeText(link).then(function() {
                 var el = document.getElementById("apiLink");
                 el.textContent = "Copied!";
