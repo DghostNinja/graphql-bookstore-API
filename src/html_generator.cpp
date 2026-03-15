@@ -743,6 +743,82 @@ string generateLandingHTML() {
             background: #f472b6;
             box-shadow: 0 0 10px rgba(244, 114, 182, 0.5);
         }
+        .coupon-carousel {
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
+            border: 1px solid rgba(74, 222, 128, 0.15);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .coupon-carousel-title {
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(74, 222, 128, 0.8);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .coupon-card {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            animation: couponFadeIn 0.6s ease;
+        }
+        .coupon-card.active {
+            display: block;
+        }
+        @keyframes couponFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .coupon-code {
+            display: inline-block;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 8px;
+            padding: 8px 24px;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .coupon-code:hover {
+            background: rgba(74, 222, 128, 0.2);
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+        }
+        .coupon-discount {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+        .coupon-desc {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
+        .coupon-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .coupon-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .coupon-dot.active {
+            background: #4ade80;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+        }
         .tools-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1317,6 +1393,36 @@ string generateLandingHTML() {
                 <div class="vuln-dot" onclick="showVulnCard(4)"></div>
                 <div class="vuln-dot" onclick="showVulnCard(5)"></div>
                 <div class="vuln-dot" onclick="showVulnCard(6)"></div>
+            </div>
+        </div>
+
+        <div class="coupon-carousel">
+            <div class="coupon-carousel-title">Available Coupon Codes</div>
+            <div class="coupon-card active" data-index="0">
+                <div class="coupon-code" onclick="copyCoupon('WELCOME10')">WELCOME10</div>
+                <div class="coupon-discount">10% Off</div>
+                <div class="coupon-desc">Welcome discount for new users</div>
+            </div>
+            <div class="coupon-card" data-index="1">
+                <div class="coupon-code" onclick="copyCoupon('FLAT20')">FLAT20</div>
+                <div class="coupon-discount">$20 Off</div>
+                <div class="coupon-desc">On orders over $100</div>
+            </div>
+            <div class="coupon-card" data-index="2">
+                <div class="coupon-code" onclick="copyCoupon('SUMMER25')">SUMMER25</div>
+                <div class="coupon-discount">25% Off</div>
+                <div class="coupon-desc">Summer sale - orders over $50</div>
+            </div>
+            <div class="coupon-card" data-index="3">
+                <div class="coupon-code" onclick="copyCoupon('DISCOUNT10')">DISCOUNT10</div>
+                <div class="coupon-discount">10% Off</div>
+                <div class="coupon-desc">General discount code</div>
+            </div>
+            <div class="coupon-nav">
+                <div class="coupon-dot active" onclick="showCouponCard(0)"></div>
+                <div class="coupon-dot" onclick="showCouponCard(1)"></div>
+                <div class="coupon-dot" onclick="showCouponCard(2)"></div>
+                <div class="coupon-dot" onclick="showCouponCard(3)"></div>
             </div>
         </div>
 
@@ -2956,6 +3062,53 @@ API_URL=https://api.graphqlbook.store/graphql npm start</pre>
             }
         }
         
+        var currentCouponIndex = 0;
+        var couponCards = [];
+        var couponDots = [];
+        
+        function initCouponCarousel() {
+            couponCards = document.querySelectorAll('.coupon-card');
+            couponDots = document.querySelectorAll('.coupon-dot');
+            if (couponCards.length > 0) {
+                currentCouponIndex = Math.floor(Math.random() * couponCards.length);
+                updateCouponDisplay();
+                setInterval(rotateCouponCard, 5000);
+            }
+        }
+        
+        function rotateCouponCard() {
+            currentCouponIndex = (currentCouponIndex + 1) % couponCards.length;
+            updateCouponDisplay();
+        }
+        
+        function showCouponCard(index) {
+            currentCouponIndex = index;
+            updateCouponDisplay();
+        }
+        
+        function updateCouponDisplay() {
+            couponCards.forEach(function(card, i) {
+                card.classList.remove('active');
+            });
+            couponDots.forEach(function(dot, i) {
+                dot.classList.remove('active');
+            });
+            if (couponCards[currentCouponIndex]) {
+                couponCards[currentCouponIndex].classList.add('active');
+            }
+            if (couponDots[currentCouponIndex]) {
+                couponDots[currentCouponIndex].classList.add('active');
+            }
+        }
+        
+        function copyCoupon(code) {
+            navigator.clipboard.writeText(code).then(function() {
+                showQueryStatus('Coupon code copied: ' + code, 'success');
+            }).catch(function() {
+                showQueryStatus('Failed to copy code', 'error');
+            });
+        }
+        
         function rotateVulnCard() {
             currentVulnIndex = (currentVulnIndex + 1) % vulnCards.length;
             updateVulnDisplay();
@@ -3145,7 +3298,10 @@ API_URL=https://api.graphqlbook.store/graphql npm start</pre>
             }
         });
 
-        window.addEventListener('load', initVulnSlideshow);
+        window.addEventListener('load', function() {
+            initVulnSlideshow();
+            initCouponCarousel();
+        });
     </script>
 </body>
 </html>

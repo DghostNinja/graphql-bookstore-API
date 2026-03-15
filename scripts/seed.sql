@@ -70,7 +70,8 @@ INSERT INTO hidden_books (book_key, isbn, title, description, author_id, categor
 INSERT INTO coupons (code, description, discount_type, discount_value, min_order_amount, usage_limit) VALUES
 ('WELCOME10', 'Welcome discount for new users', 'percentage', 10.0, 0, 100),
 ('FLAT20', 'Flat $20 off orders over $100', 'fixed', 20.0, 100.0, 50),
-('SUMMER25', 'Summer sale - 25% off', 'percentage', 25.0, 50.0, 200);
+('SUMMER25', 'Summer sale - 25% off', 'percentage', 25.0, 50.0, 200),
+('DISCOUNT10', 'General discount code', 'percentage', 10.0, 0, 100);
 
 -- Insert sample reviews
 INSERT INTO reviews (user_id, book_id, rating, comment, is_verified_purchase, is_approved)
