@@ -35,6 +35,26 @@ Server runs on http://localhost:4000/
 | staff    | password123 | staff |
 | user     | password123 | user |
 
+## Difficulty Rating
+
+This API is designed for security education with progressive difficulty:
+
+| Aspect | Difficulty |
+|--------|-----------|
+| GraphQL complexity | 7/10 |
+| Number of vulnerabilities | 10+ |
+| Realism | 9/10 |
+| Finding vulnerabilities | 4/10 (some are hidden) |
+| Exploiting them | 5-8/10 (varies) |
+
+**Difficulty Breakdown:**
+- **Easy (1-3)**: Basic SQL injection, IDOR, BOLA, weak JWT secret
+- **Medium (4-6)**: SSRF, mass assignment, timing attacks, information disclosure
+- **Hard (7-8)**: XXE, JWT algorithm confusion, race conditions, cache poisoning
+- **Expert (9-10)**: Hidden pro vulnerabilities, batch query bypass
+
+The API starts easy and progressively gets harder with hidden chapters and pro-level challenges.
+
 ## Manual Build (if needed)
 
 ```bash

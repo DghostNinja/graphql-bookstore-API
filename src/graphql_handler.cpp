@@ -551,6 +551,7 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         response << "{\"name\":\"myReviews\"},";
         response << "{\"name\":\"webhooks\"},";
         response << "{\"name\":\"_internalUserSearch\"},";
+        response << "{\"name\":\"_internalUserCart\"},";
         response << "{\"name\":\"_fetchExternalResource\"},";
         response << "{\"name\":\"_searchAdvanced\"},";
         response << "{\"name\":\"_adminStats\"},";
@@ -654,6 +655,47 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
             }
         }
         response << "]";
+        firstField = false;
+    }
+
+    if (query.find("_internalUserCart") != std::string::npos) {
+        std::string targetUserId = extractValue(query, "userId");
+        std::cerr << "[QUERY] _internalUserCart(userId: \"" << targetUserId << "\")" << std::endl;
+        
+        std::string cartId = "";
+        const char* cartParams[1] = {targetUserId.c_str()};
+        PGresult* cartRes = PQexecParams(dbConn, "SELECT id FROM shopping_carts WHERE user_id = $1", 1, nullptr, cartParams, nullptr, nullptr, 0);
+        if (PQresultStatus(cartRes) == PGRES_TUPLES_OK && PQntuples(cartRes) > 0) {
+            cartId = PQgetvalue(cartRes, 0, 0);
+        }
+        PQclear(cartRes);
+
+        if (!firstField) response << ",";
+        response << "\"_internalUserCart\":{";
+        response << "\"userId\":\"" << targetUserId << "\",";
+        response << "\"cartId\":\"" << cartId << "\",";
+        response << "\"items\":[";
+        
+        if (!cartId.empty()) {
+            const char* itemParams[1] = {cartId.c_str()};
+            PGresult* itemsRes = PQexecParams(dbConn, 
+                "SELECT ci.id, ci.book_id, ci.quantity, b.title, b.price "
+                "FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
+                1, nullptr, itemParams, nullptr, nullptr, 0);
+            if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
+                int rows = PQntuples(itemsRes);
+                for (int i = 0; i < rows; i++) {
+                    if (i > 0) response << ",";
+                    response << "{\"id\":\"" << PQgetvalue(itemsRes, i, 0) << "\",";
+                    response << "\"bookId\":" << PQgetvalue(itemsRes, i, 1) << ",";
+                    response << "\"quantity\":" << PQgetvalue(itemsRes, i, 2) << ",";
+                    response << "\"title\":\"" << escapeJson(PQgetvalue(itemsRes, i, 3)) << "\",";
+                    response << "\"price\":" << PQgetvalue(itemsRes, i, 4) << "}";
+                }
+            }
+            PQclear(itemsRes);
+        }
+        response << "]}";
         firstField = false;
     }
 
@@ -1178,8 +1220,8 @@ std::string handleMutation(const std::string& query, User& currentUser) {
     }
 
     if (query.find("addToCart(") != std::string::npos && !currentUser.id.empty()) {
-        std::string bookIdStr = extractIntValue(query, "bookId");
-        std::string quantityStr = extractIntValue(query, "quantity");
+        std::string bookIdStr = extractValue(query, "bookId");
+        std::string quantityStr = extractValue(query, "quantity");
         int bookId = bookIdStr.empty() ? 0 : stoi(bookIdStr);
         int quantity = quantityStr.empty() ? 1 : stoi(quantityStr);
 

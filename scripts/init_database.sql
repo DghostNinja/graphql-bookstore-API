@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
     id SERIAL PRIMARY KEY,
     cart_id UUID REFERENCES shopping_carts(id),
     book_id INTEGER REFERENCES books(id),
-    quantity INTEGER DEFAULT 1 CHECK (quantity > 0),
+    quantity INTEGER DEFAULT 1,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_cart_book UNIQUE (cart_id, book_id)
 );
