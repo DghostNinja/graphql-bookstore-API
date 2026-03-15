@@ -2447,15 +2447,6 @@ docker-compose up --build</pre>
                         </div>
                         <div class="endpoint-card">
                             <div class="endpoint-header"><span class="endpoint-method method-mutation">Mutation</span><span class="auth-badge auth-required">Auth</span></div>
-                            <div class="endpoint-name">purchaseCart</div>
-                            <div class="endpoint-desc">Checkout cart with payment</div>
-                            <div class="code-block" style="margin-top: 8px; font-size: 0.7rem;">
-                                <button class="copy-button" onclick="copyToClipboard('mut-purchase')">Copy</button>
-                                <code id="mut-purchase">mutation { purchaseCart(cardNumber: "4111111111111111", expiry: "12/25", cvv: "123") { success orderId } }</code>
-                            </div>
-                        </div>
-                        <div class="endpoint-card">
-                            <div class="endpoint-header"><span class="endpoint-method method-mutation">Mutation</span><span class="auth-badge auth-required">Auth</span></div>
                             <div class="endpoint-name">cancelOrder</div>
                             <div class="endpoint-desc">Cancel an order</div>
                             <div class="code-block" style="margin-top: 8px; font-size: 0.7rem;">

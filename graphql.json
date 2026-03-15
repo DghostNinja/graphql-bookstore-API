@@ -507,27 +507,6 @@
           }
         },
         {
-          "name": "Purchase Cart",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { purchaseCart(cardNumber: \\\"{{cardNumber}}\\\", expiry: \\\"{{cardExpiry}}\\\", cvv: \\\"{{cardCvv}}\\\") { success message transactionId orderId totalAmount warning } }\"}"
-            }
-          }
-        },
-        {
           "name": "Cancel Order",
           "request": {
             "method": "POST",

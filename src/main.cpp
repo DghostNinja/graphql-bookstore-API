@@ -168,7 +168,7 @@ bool readFullRequest(int clientSocket, string& request, int timeoutSec) {
 bool requiresAuthentication(const string& query) {
     vector<string> authRequiredMutations = {
         "addToCart", "removeFromCart", "applyCoupon", "createOrder",
-        "purchaseCart", "checkout", "cancelOrder", "createReview",
+        "checkout", "cancelOrder", "createReview",
         "deleteReview", "registerWebhook", "testWebhook", "updateProfile",
         "logout"
     };

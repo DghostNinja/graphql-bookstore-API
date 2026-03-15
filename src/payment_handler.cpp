@@ -9,46 +9,33 @@
 
 extern PGconn* dbConn;
 
-// Function to simulate charging a card at vulnbank.org
-bool chargeVulnBankCard(const std::string& cardNumber, const std::string& expiry, const std::string& cvv, double amount, std::string& transactionId, std::string& message) {
-    CURL* curl;
-    CURLcode res;
-    std::string readBuffer;
-
-    curl = curl_easy_init();
-    if(curl) {
-        std::string postFields = "card_number=" + cardNumber + "&expiry=" + expiry + "&cvv=" + cvv + "&amount=" + std::to_string(amount);
-        std::string url = "http://vulnbank.org/api/charge"; // Simulating interaction
-
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postFields.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L); // Add timeout
-
-        res = curl_easy_perform(curl);
-        if(res != CURLE_OK) {
-            message = "curl_easy_perform() failed: " + std::string(curl_easy_strerror(res));
-            curl_easy_cleanup(curl);
-            return false;
-        }
-
-        // Simulate parsing vulnbank.org response
-        // For simplicity, we'll look for a success string.
-        // In a real scenario, you'd parse JSON/XML from readBuffer.
-        if (readBuffer.find("\"success\":true") != std::string::npos) {
-            transactionId = "VULN-" + std::to_string(time(0)) + "-" + cardNumber.substr(cardNumber.length() - 4);
-            message = "Payment successful at vulnbank.org";
-            curl_easy_cleanup(curl);
-            return true;
-        } else {
-            message = "Payment failed at vulnbank.org. Response: " + readBuffer;
-            curl_easy_cleanup(curl);
-            return false;
+// Function to validate card number (13-19 digits) and simulate payment
+bool processCardPayment(const std::string& cardNumber, const std::string& expiry, const std::string& cvv, double amount, std::string& transactionId, std::string& message) {
+    std::string cleanedCard;
+    for (char c : cardNumber) {
+        if (isdigit(c)) {
+            cleanedCard += c;
         }
     }
-    message = "Failed to initialize CURL";
-    return false;
+    
+    if (cleanedCard.length() < 13 || cleanedCard.length() > 19) {
+        message = "Invalid card number. Must be 13-19 digits.";
+        return false;
+    }
+    
+    if (expiry.empty() || expiry.length() < 4) {
+        message = "Invalid expiry date.";
+        return false;
+    }
+    
+    if (cvv.empty() || cvv.length() < 3 || cvv.length() > 4) {
+        message = "Invalid CVV. Must be 3-4 digits.";
+        return false;
+    }
+    
+    transactionId = "DEMO-" + std::to_string(time(0)) + "-" + cleanedCard.substr(cleanedCard.length() - 4);
+    message = "Payment processed successfully (demo mode)";
+    return true;
 }
 
 // Function to record payment in the database
@@ -86,7 +73,7 @@ std::string processPayment(const std::string& userId, const std::string& orderId
     std::string paymentMessage = "";
     std::string paymentStatus = "failed";
 
-    if (chargeVulnBankCard(cardNumber, expiry, cvv, totalAmount, transactionId, paymentMessage)) {
+    if (processCardPayment(cardNumber, expiry, cvv, totalAmount, transactionId, paymentMessage)) {
         paymentStatus = "completed";
     }
 
@@ -101,11 +88,11 @@ std::string processPayment(const std::string& userId, const std::string& orderId
     }
 
     if (paymentStatus == "completed") {
-        // Update order status in main database to 'paid'
+        // Update order status in main database to 'processing' with completed payment
         std::string updateSql = "UPDATE orders SET status = $1, payment_status = $2 WHERE id = $3 AND user_id = $4";
         const char* updateParamValues[4];
-        updateParamValues[0] = "paid";
-        updateParamValues[1] = "paid";
+        updateParamValues[0] = "processing";
+        updateParamValues[1] = "completed";
         updateParamValues[2] = orderId.c_str();
         updateParamValues[3] = userId.c_str();
         PGresult* updateRes = PQexecParams(dbConn, updateSql.c_str(), 4, nullptr, updateParamValues, nullptr, nullptr, 0);
