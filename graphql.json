@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "GraphQL Bookstore API",
-    "description": "A GraphQL API for a bookstore with authentication, shopping cart, orders, reviews, and webhooks.\n\n## Setup\n1. Import this collection into Postman\n2. Set the `base_url` variable (default: http://localhost:4000) or use (live URL:https://api.graphqlbook.store)\n3. Fill in the input variables before each request (username, password, bookId, etc.)\n4. Use the Login mutation to get a token, then set the `token` variable\n\n## Input Variables\nSet these in Postman's variable editor or per-request:\n- `username` - Login username\n- `password` - Login password\n- `firstName` - First name for registration/profile\n- `lastName` - Last name for registration/profile\n- `bookId` - Book ID for cart/review operations\n- `quantity` - Quantity for cart operations\n- `couponCode` - Coupon code for discounts\n- `rating` - Rating for reviews (1-5)\n- `comment` - Comment text for reviews\n- `reviewId` - Review ID for deletion\n- `webhookId` - Webhook ID for testing\n- `webhookUrl` - URL for webhook registration\n- `orderId` - Order ID for cancellation\n- `cardNumber` - Payment card number\n- `cardExpiry` - Card expiry (MM/YY)\n- `cardCvv` - Card CVV\n\n## Default Credentials\n- admin / password123 (admin)\n- staff / password123 (staff)\n- user / password123 (user)",
+    "description": "A GraphQL API for a bookstore with authentication, shopping cart, orders, reviews, and webhooks.\n\n## User Flow\n1. Register/Login → Get token\n2. Browse books → Search → View details\n3. Add items to cart → Apply coupon\n4. Checkout → Payment → Order created\n5. View orders → Cancel if needed\n6. Create reviews for purchased books\n\n## Setup\n1. Import this collection into Postman\n2. Set the `base_url` variable (default: http://localhost:4000) or use (live URL: https://api.graphqlbook.store)\n3. Fill in the input variables before each request\n4. Use the Login mutation to get a token, then set the `token` variable\n\n## Input Variables\n- `username` - Login username\n- `password` - Login password\n- `firstName` - First name for registration/profile\n- `lastName` - Last name for registration/profile\n- `bookId` - Book ID for cart/review operations\n- `quantity` - Quantity for cart operations\n- `couponCode` - Coupon code (WELCOME10, FLAT20, SUMMER25, DISCOUNT10)\n- `rating` - Rating for reviews (1-5)\n- `comment` - Comment text for reviews\n- `reviewId` - Review ID for deletion\n- `webhookId` - Webhook ID for testing\n- `webhookUrl` - URL for webhook registration\n- `orderId` - Order ID for cancellation\n- `cardNumber` - Payment card number (any 13-19 digits)\n- `cardExpiry` - Card expiry (MM/YY)\n- `cardCvv` - Card CVV (3-4 digits)\n\n## Default Credentials\n- admin / password123 (admin)\n- staff / password123 (staff)\n- user / password123 (user)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -42,22 +42,22 @@
     },
     {
       "key": "quantity",
-      "value": "",
+      "value": "1",
       "type": "string"
     },
     {
       "key": "couponCode",
-      "value": "",
+      "value": "WELCOME10",
       "type": "string"
     },
     {
       "key": "rating",
-      "value": "",
+      "value": "5",
       "type": "string"
     },
     {
       "key": "comment",
-      "value": "",
+      "value": "Great book!",
       "type": "string"
     },
     {
@@ -72,7 +72,7 @@
     },
     {
       "key": "webhookUrl",
-      "value": "",
+      "value": "http://example.com/webhook",
       "type": "string"
     },
     {
@@ -82,23 +82,28 @@
     },
     {
       "key": "cardNumber",
-      "value": "",
+      "value": "4111111111111111",
       "type": "string"
     },
     {
       "key": "cardExpiry",
-      "value": "",
+      "value": "12/25",
       "type": "string"
     },
     {
       "key": "cardCvv",
+      "value": "123",
+      "type": "string"
+    },
+    {
+      "key": "search",
       "value": "",
       "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Authentication",
+      "name": "1. Authentication",
       "item": [
         {
           "name": "Register",
@@ -137,7 +142,7 @@
       ]
     },
     {
-      "name": "Queries",
+      "name": "2. Browse Books",
       "item": [
         {
           "name": "Books (All)",
@@ -152,7 +157,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"{ books { id title author { firstName lastName } price description category { id name } } }\"}"
+              "raw": "{\"query\":\"{ books { id title author { firstName lastName } price stockQuantity category { name } } }\"}"
             }
           }
         },
@@ -169,7 +174,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"{ book(id: {{bookId}}) { id title author { firstName lastName } price description stock category { id name } } }\"}"
+              "raw": "{\"query\":\"{ book(id: {{bookId}}) { id title author { firstName lastName } price description stockQuantity category { name } } }\"}"
             }
           }
         },
@@ -186,7 +191,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"{ books(search: \\\"{{search}}\\\") { id title price } }\"}"
+              "raw": "{\"query\":\"{ books(search: \\\"{{search}}\\\") { id title author { firstName } price } }\"}"
             }
           }
         },
@@ -206,7 +211,12 @@
               "raw": "{\"query\":\"{ bookReviews(bookId: {{bookId}}) { id rating comment user { username } createdAt } }\"}"
             }
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "3. User Profile",
+      "item": [
         {
           "name": "Me (Current User)",
           "request": {
@@ -224,99 +234,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"{ me { id username firstName lastName email role } }\"}"
+              "raw": "{\"query\":\"{ me { id username firstName lastName role } }\"}"
             }
           }
         },
-        {
-          "name": "Cart",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"{ cart { id items { id book { id title price } quantity } subtotal tax discount total } }\"}"
-            }
-          }
-        },
-        {
-          "name": "Orders",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"{ orders { id status totalAmount createdAt items { id book { id title } quantity price } } }\"}"
-            }
-          }
-        },
-        {
-          "name": "My Reviews",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"{ myReviews { id rating comment book { id title } createdAt } }\"}"
-            }
-          }
-        },
-        {
-          "name": "Webhooks",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"{ webhooks { id url events isActive createdAt } }\"}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Mutations",
-      "item": [
         {
           "name": "Update Profile",
           "request": {
@@ -335,6 +256,32 @@
             "body": {
               "mode": "raw",
               "raw": "{\"query\":\"mutation { updateProfile(firstName: \\\"{{firstName}}\\\", lastName: \\\"{{lastName}}\\\") { success message } }\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Shopping Cart",
+      "item": [
+        {
+          "name": "View Cart",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"{ cart { id items { id book { id title price } quantity } subtotal tax discount couponCode total } }\"}"
             }
           }
         },
@@ -400,7 +347,101 @@
               "raw": "{\"query\":\"mutation { applyCoupon(code: \\\"{{couponCode}}\\\") { success message discount } }\"}"
             }
           }
+        }
+      ]
+    },
+    {
+      "name": "5. Checkout & Orders",
+      "item": [
+        {
+          "name": "Create Order (No Payment)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { createOrder { success orderId totalAmount } }\"}"
+            }
+          }
         },
+        {
+          "name": "Checkout (With Payment)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { checkout(cardNumber: \\\"{{cardNumber}}\\\", expiry: \\\"{{cardExpiry}}\\\", cvv: \\\"{{cardCvv}}\\\") { success orderId orderNumber totalAmount warning payment { success message transactionId } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "View Orders",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"{ orders { id orderNumber status totalAmount paymentStatus createdAt items { id book { id title } quantity unitPrice } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { cancelOrder(orderId: \\\"{{orderId}}\\\") { success message } }\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Reviews",
+      "item": [
         {
           "name": "Create Review",
           "request": {
@@ -419,6 +460,27 @@
             "body": {
               "mode": "raw",
               "raw": "{\"query\":\"mutation { createReview(bookId: {{bookId}}, rating: {{rating}}, comment: \\\"{{comment}}\\\") { success message } }\"}"
+            }
+          }
+        },
+        {
+          "name": "My Reviews",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"{ myReviews { id rating comment book { id title } createdAt } }\"}"
             }
           }
         },
@@ -442,7 +504,12 @@
               "raw": "{\"query\":\"mutation { deleteReview(reviewId: {{reviewId}}) { success message } }\"}"
             }
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "7. Webhooks",
+      "item": [
         {
           "name": "Register Webhook",
           "request": {
@@ -460,7 +527,28 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"mutation { registerWebhook(url: \\\"{{webhookUrl}}\\\", events: [\\\"order.created\\\", \\\"order.paid\\\"], secret: \\\"mysecret\\\") { success message webhook { id } } }\"}"
+              "raw": "{\"query\":\"mutation { registerWebhook(url: \\\"{{webhookUrl}}\\\", events: [\\\"order.created\\\", \\\"order.paid\\\", \\\"order.cancelled\\\"], secret: \\\"mysecret\\\") { success message webhook { id } } }\"}"
+            }
+          }
+        },
+        {
+          "name": "View Webhooks",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"{ webhooks { id url events isActive createdAt } }\"}"
             }
           }
         },
@@ -482,48 +570,6 @@
             "body": {
               "mode": "raw",
               "raw": "{\"query\":\"mutation { testWebhook(webhookId: \\\"{{webhookId}}\\\") { success message } }\"}"
-            }
-          }
-        },
-        {
-          "name": "Checkout (Create Order)",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { checkout(cardNumber: \\\"{{cardNumber}}\\\", expiry: \\\"{{cardExpiry}}\\\", cvv: \\\"{{cardCvv}}\\\") { success orderId orderNumber totalAmount warning } }\"}"
-            }
-          }
-        },
-        {
-          "name": "Cancel Order",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"query\":\"mutation { cancelOrder(orderId: \\\"{{orderId}}\\\") { success message } }\"}"
             }
           }
         }
