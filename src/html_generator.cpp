@@ -1346,7 +1346,7 @@ string generateLandingHTML() {
                     </svg>
                 </div>
                 <span class="api-link-text">Access the API at:</span>
-                <a class="api-link" onclick="copyApiLink()" id="apiLink">api.graphqlbook.store/graphql</a>
+                <a class="api-link" onclick="copyApiLink()" id="apiLink">api.graphqlbook.org/graphql</a>
             </div>
             
             <div class="method-info">
@@ -1719,7 +1719,7 @@ string generateLandingHTML() {
                     </p>
                     <div class="code-block">
                         <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #4ade80;">Local Development:</span>  http://localhost:4000/graphql
-<span style="color: #60a5fa;">Live URL:</span> https://api.graphqlbook.store/graphql
+<span style="color: #60a5fa;">Live URL:</span> https://api.graphqlbook.org/graphql
 
 <span style="color: #52525b;">// All examples below use localhost. Simply replace with the live URL when ready.</span></pre>
                     </div>
@@ -1867,7 +1867,7 @@ mutation {
                         <pre style="color: #a3a3a3; line-height: 1.8;"><span style="color: #fbbf24;">Method:</span> POST
 
 <span style="color: #fbbf24;">URL:</span> http://localhost:4000/graphql
-      (or https://api.graphqlbook.store/graphql for production)
+      (or https://api.graphqlbook.org/graphql for production)
 
 <span style="color: #fbbf24;">Headers:</span>
 Content-Type: application/json
@@ -2585,7 +2585,7 @@ npm start</pre>
                     <div class="code-block">
                         <pre style="color: #a3a3a3; line-height: 1.8;">
 cd mcp
-API_URL=https://api.graphqlbook.store/graphql npm start</pre>
+API_URL=https://api.graphqlbook.org/graphql npm start</pre>
                     </div>
 
                     <div class="section-title" style="margin-top: 25px;">Available MCP Tools</div>
@@ -2666,7 +2666,7 @@ API_URL=https://api.graphqlbook.store/graphql npm start</pre>
 }</pre>
                     </div>
                     <p style="color: rgba(255,255,255,0.6); margin-bottom: 20px; line-height: 1.6;">
-                        For production, change <code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;">API_URL</code> to <code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;">https://api.graphqlbook.store/graphql</code>.
+                        For production, change <code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;">API_URL</code> to <code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px;">https://api.graphqlbook.org/graphql</code>.
                     </p>
 
                     <div class="section-title" style="margin-top: 25px;">Environment Variables</div>
@@ -3027,13 +3027,13 @@ API_URL=https://api.graphqlbook.store/graphql npm start</pre>
         }
 
         function copyApiLink() {
-            var link = "https://api.graphqlbook.store/graphql";
+            var link = "https://api.graphqlbook.org/graphql";
             navigator.clipboard.writeText(link).then(function() {
                 var el = document.getElementById("apiLink");
                 el.textContent = "Copied!";
                 el.classList.add("copied");
                 setTimeout(function() {
-                    el.textContent = "api.graphqlbook.store/graphql";
+                    el.textContent = "api.graphqlbook.org/graphql";
                     el.classList.remove("copied");
                 }, 2000);
             });

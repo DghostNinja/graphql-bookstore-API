@@ -41,7 +41,7 @@ npm start
 **Production (Live API):**
 ```bash
 cd mcp
-API_URL=https://api.graphqlbook.store/graphql npm start
+API_URL=https://api.graphqlbook.org/graphql npm start
 ```
 
 #### Claude Desktop Integration
@@ -105,7 +105,7 @@ sudo -u postgres psql -f scripts/init_database.sql
 ### Accessing the API
 
 - **Local URL**: http://localhost:4000/graphql
-- **Live URL**: https://api.graphqlbook.store/graphql
+- **Live URL**: https://api.graphqlbook.org/graphql
 
 ### Default Users
 

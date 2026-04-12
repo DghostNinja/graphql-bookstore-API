@@ -37,7 +37,7 @@ The API runs on `http://localhost:4000/graphql` by default.
 #### Option B: Production
 Use the live API endpoint:
 ```
-https://api.graphqlbook.store/graphql
+https://api.graphqlbook.org/graphql
 ```
 
 ## Installation
@@ -57,7 +57,7 @@ cd mcp
 npm install
 
 # Run with production API
-API_URL=https://api.graphqlbook.store/graphql npm start
+API_URL=https://api.graphqlbook.org/graphql npm start
 ```
 
 ### Option C: Claude Desktop Integration
@@ -91,7 +91,7 @@ API_URL=https://api.graphqlbook.store/graphql npm start
       "command": "node",
       "args": ["/path/to/GraphQL-Bookstore/mcp/mcp_server.mjs"],
       "env": {
-        "API_URL": "https://api.graphqlbook.store/graphql"
+        "API_URL": "https://api.graphqlbook.org/graphql"
       }
     }
   }

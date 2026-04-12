@@ -552,7 +552,7 @@ The server contains additional advanced features for expert-level testing:
 369: ### API Documentation Page
 370: The landing page (`generateLandingHTML()` in `src/main.cpp`) provides:
 371: - Glass-morphism UI design with animated backgrounds
-372: - **API Link Bar**: Small glass icon with pulse animation and copyable link to `api.graphqlbook.store/graphql`
+372: - **API Link Bar**: Small glass icon with pulse animation and copyable link to `api.graphqlbook.org/graphql`
 373: - Query Runner panel for testing GraphQL queries
 374: - Login and Registration panels with JWT token storage
 375: - Quick examples and available endpoints grid
@@ -580,12 +580,12 @@ The web documentation is organized as follows:
 
 **API Endpoints:**
 - Local: `http://localhost:4000/graphql`
-- Live: `https://api.graphqlbook.store/graphql`
+- Live: `https://api.graphqlbook.org/graphql`
 
 **Postman Collection:**
 A ready-to-use Postman collection is available at `/graphql.json`. Download it directly from the UI in the "How To Send Requests" section, or access it at:
 - Local: `http://localhost:4000/graphql.json`
-- Live: `https://api.graphqlbook.store/graphql.json`
+- Live: `https://api.graphqlbook.org/graphql.json`
 
 The collection includes all public queries and mutations with input variables. Import it into Postman and set the `base_url` variable, then fill in input variables (username, password, bookId, etc.) before each request.
 382: 
