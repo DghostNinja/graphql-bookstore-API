@@ -6,7 +6,8 @@ std::map<std::string, PGresult*> preparedStatements;
 
 bool connectDatabase() {
     std::string connStr = getenv("DATABASE_URL") ? getenv("DATABASE_URL") : "postgresql://bookstore_user:bookstore_password@localhost:5432/bookstore_db";
-    std::cerr << "[DB] Connecting to " << connStr << std::endl;
+    
+    std::cerr << "[DB] Connecting to database..." << std::endl;
 
     dbConn = PQconnectdb(connStr.c_str());
     if (PQstatus(dbConn) != CONNECTION_OK) {
@@ -30,6 +31,22 @@ bool checkDatabaseConnection() {
         return connectDatabase();
     }
     return true;
+}
+
+// Auto-reconnect wrapper for queries
+PGresult* safeExec(const char* sql) {
+    checkDatabaseConnection();
+    return PQexec(dbConn, sql);
+}
+
+PGresult* safeExecParams(const char* sql, int nParams, const char* const* paramValues) {
+    checkDatabaseConnection();
+    return PQexecParams(dbConn, sql, nParams, nullptr, paramValues, nullptr, nullptr, 0);
+}
+
+PGconn* getConnection() {
+    checkDatabaseConnection();
+    return dbConn;
 }
 
 PGresult* executePrepared(const char* name, const char* sql, int nParams, const char* const* paramValues) {
