@@ -813,31 +813,19 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
                     double cartTax = cartSubtotal * 0.08;
                     double cartShipping = cartSubtotal > 50 ? 0.0 : 5.99;
                     
-                    if (cartSubtotal > 0 || cartDiscount > 0 || !cartCoupon.empty() || cartTotal > 0) {
-                        response << ",";
-                        if (query.empty() || isFieldRequested(query, "subtotal")) {
-                            response << "\"subtotal\":" << cartSubtotal;
-                        }
-                        if (query.empty() || isFieldRequested(query, "tax")) {
-                            response << ",";
-                            response << "\"tax\":" << cartTax;
-                        }
-                        if (query.empty() || isFieldRequested(query, "shipping")) {
-                            response << ",";
-                            response << "\"shipping\":" << cartShipping;
-                        }
-                        if (query.empty() || isFieldRequested(query, "discount")) {
-                            if (cartDiscount > 0) response << ",";
-                            response << "\"discount\":" << cartDiscount;
-                        }
-                        if (query.empty() || isFieldRequested(query, "couponCode")) {
-                            if (!cartCoupon.empty()) response << ",";
-                            response << "\"couponCode\":\"" << escapeJson(cartCoupon) << "\"";
-                        }
-                        if (query.empty() || isFieldRequested(query, "total")) {
-                            if (cartTotal > 0) response << ",";
-                            response << "\"total\":" << cartTotal;
-                        }
+                    // ALWAYS show totals when items exist
+                    response << ",";
+                    response << "\"subtotal\":" << cartSubtotal;
+                    response << ",\"tax\":" << cartTax;
+                    response << ",\"shipping\":" << cartShipping;
+                    if (cartDiscount > 0) {
+                        response << ",\"discount\":" << cartDiscount;
+                    }
+                    if (!cartCoupon.empty()) {
+                        response << ",\"couponCode\":\"" << escapeJson(cartCoupon) << "\"";
+                    }
+                    if (cartTotal > 0) {
+                        response << ",\"total\":" << cartTotal;
                     }
                 }
                 PQclear(totalsRes);
@@ -1363,9 +1351,10 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         firstField = false;
         bool addSuccess = (PQresultStatus(res) == PGRES_TUPLES_OK);
         if (addSuccess) {
+            // Update cart totals
             const char* updateCartParams[1] = {cartId.c_str()};
             PGresult* itemsSumRes = PQexecParams(dbConn, 
-                "SELECT COALESCE(SUM(COALESCE(ci.unit_price, b.price) * ci.quantity), 0)::decimal FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
+                "SELECT COALESCE(SUM(COALESCE(ci.unit_price, b.price) * ci.quantity), 0) FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
                 1, nullptr, updateCartParams, nullptr, nullptr, 0);
             double cartSum = 0;
             if (PQresultStatus(itemsSumRes) == PGRES_TUPLES_OK && PQntuples(itemsSumRes) > 0) {
@@ -1376,11 +1365,8 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                 double cartTax = cartSum * 0.08;
                 double cartShipping = cartSum > 50 ? 0.0 : 5.99;
                 double cartTotal = cartSum + cartTax + cartShipping;
-                std::cerr << "[CARTSUM] subtotal=" << cartSum << ", tax=" << cartTax << ", shipping=" << cartShipping << ", total=" << cartTotal << std::endl;
                 const char* updateParams[4] = {std::to_string(cartSum).c_str(), std::to_string(cartTax).c_str(), std::to_string(cartTotal).c_str(), cartId.c_str()};
-                PGresult* upRes = PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = $1, tax = $2, total = $3, updated_at = NOW() WHERE id = $4", 4, nullptr, updateParams, nullptr, nullptr, 0);
-                std::cerr << "[CARTUPDATE] status=" << PQresultStatus(upRes) << std::endl;
-                PQclear(upRes);
+                PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = $1, tax = $2, total = $3, updated_at = NOW() WHERE id = $4", 4, nullptr, updateParams, nullptr, nullptr, 0);
             }
         }
         PQclear(res);

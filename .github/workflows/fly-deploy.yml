@@ -41,18 +41,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build FRESH Docker image with LATEST source code
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
-            ${{ env.DOCKER_IMAGE }}:latest
-          no-cache: true  # Force fresh build every time
-          build-args: |
-            BUILD_DATE=${{ github.sha }}
+- name: Build FRESH Docker image with LATEST source code
+        run: |
+          docker build --no-cache -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+          docker build --no-cache -t ${{ env.DOCKER_IMAGE }}:latest .
+          docker push ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          docker push ${{ env.DOCKER_IMAGE }}:latest
 
       - name: Verify built image
         run: |
