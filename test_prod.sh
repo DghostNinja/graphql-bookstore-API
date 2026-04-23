@@ -1,6 +1,6 @@
 #!/bin/bash
 
-API_URL="${API_URL:-http://localhost:4000/graphql}"
+API_URL="${API_URL:-https://api.graphqlbook.org/graphql}"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
@@ -22,9 +22,7 @@ test_query() {
     local query="$1"
     local token="${2:-}"
     
-    cat > "$TMPDIR/q.json" << QEOF
-{"query":"$query"}
-QEOF
+    printf '{"query":"%s"}' "$query" > "$TMPDIR/q.json"
     
     if [ -n "$token" ]; then
         curl -s -X POST "$API_URL" \
@@ -143,11 +141,11 @@ echo ""
 info "TEST 12: Cancel Order"
 order_id=$(echo "$orders_resp" | grep -oP '"id":"[^"]+' | head -1 | cut -d'"' -f4)
 if [ -n "$order_id" ]; then
-    cancel_resp=$(test_query "mutation { cancelOrder(orderId: \"$order_id\") { success message } }" "$TOKEN")
+    cancel_resp=$(test_query "mutation { cancelOrder(orderId: \"$order_id\") { success } }" "$TOKEN")
     if echo "$cancel_resp" | grep -q '"success":true'; then
         pass "Cancel order works"
     else
-        pass "Cancel order executed"
+        fail "Cancel order failed"
     fi
 else
     info "No orders to cancel"
@@ -196,38 +194,38 @@ fi
 
 echo ""
 info "TEST 17: Register Webhook"
-webhook_resp=$(test_query 'mutation { registerWebhook(url: \"http://example.com/test\", events: [\"order.created\"]) { success message } }' "$TOKEN")
+webhook_resp=$(test_query 'mutation { registerWebhook(url: \"https://example.com/webhook\", events: [\"order.created\"]) { success } }' "$TOKEN")
 if echo "$webhook_resp" | grep -q '"success":true'; then
     pass "Register webhook works"
 else
-    pass "Register webhook executed"
+    fail "Register webhook failed"
 fi
 
 echo ""
 info "TEST 18: View Webhooks"
-webhooks_resp=$(test_query 'query { webhooks { id url events } }' "$TOKEN")
-if echo "$webhooks_resp" | grep -q '"url"'; then
+webhooks_resp=$(test_query 'query { webhooks { id url } }' "$TOKEN")
+if echo "$webhooks_resp" | grep -q "url"; then
     pass "Webhooks query works"
 else
-    pass "Webhooks query executed"
+    fail "Webhooks query failed"
 fi
 
 echo ""
 info "TEST 19: Update Profile"
-update_resp=$(test_query 'mutation { updateProfile(phone: \"1234567890\") { id username } }' "$TOKEN")
-if echo "$update_resp" | grep -q '"username"'; then
+update_resp=$(test_query 'mutation { updateProfile(phone: \"1234567890\") { success } }' "$TOKEN")
+if echo "$update_resp" | grep -q '"success":true'; then
     pass "Update profile works"
 else
-    pass "Update profile executed"
+    fail "Update profile failed"
 fi
 
 echo ""
 info "TEST 20: Logout"
 logout_resp=$(test_query 'mutation { logout }' "$TOKEN")
-if echo "$logout_resp" | grep -q 'data'; then
+if echo "$logout_resp" | grep -q 'true'; then
     pass "Logout works"
 else
-    pass "Logout executed"
+    fail "Logout failed"
 fi
 
 echo ""
@@ -241,11 +239,11 @@ fi
 
 echo ""
 info "TEST 22: GraphQL POST Health"
-post_resp=$(curl -s -X POST "$API_URL" -H 'Content-Type: application/json' -d '{"query":"{ __typename }"}')
-if echo "$post_resp" | grep -q "__typename"; then
+post_health=$(curl -s -X POST "$API_URL" -H 'Content-Type: application/json' -d '{"query":"{ __typename }"}' | grep -q "__typename" && echo "OK")
+if [ "$post_health" = "OK" ]; then
     pass "GraphQL POST works"
 else
-    pass "GraphQL POST executed"
+    fail "GraphQL POST failed"
 fi
 
 echo ""
