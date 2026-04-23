@@ -1449,6 +1449,12 @@ std::string handleMutation(const std::string& query, User& currentUser) {
             cartId = PQgetvalue(cartRes, 0, 0);
             discount = atof(PQgetvalue(cartRes, 0, 1));
             couponCode = PQgetvalue(cartRes, 0, 2);
+        } else {
+            PGresult* insertRes = PQexecParams(dbConn, "INSERT INTO shopping_carts (user_id) VALUES ($1) RETURNING id", 1, nullptr, cartParams, nullptr, nullptr, 0);
+            if (PQresultStatus(insertRes) == PGRES_TUPLES_OK && PQntuples(insertRes) > 0) {
+                cartId = PQgetvalue(insertRes, 0, 0);
+            }
+            PQclear(insertRes);
         }
         PQclear(cartRes);
 
@@ -1457,7 +1463,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         double subtotal = 0;
         int itemCount = 0;
         const char* cartParam[1] = {cartId.c_str()};
-        PGresult* itemsRes = PQexecParams(dbConn, "SELECT ci.book_id, b.title, b.isbn, ci.quantity, b.price "
+        PGresult* itemsRes = PQexecParams(dbConn, "SELECT ci.book_id, b.title, b.isbn, ci.quantity, COALESCE(ci.unit_price, b.price) as price "
                                                       "FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
                                           1, nullptr, cartParam, nullptr, nullptr, 0);
         if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
@@ -1568,6 +1574,12 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                 cartId = PQgetvalue(cartRes, 0, 0);
                 discount = atof(PQgetvalue(cartRes, 0, 1));
                 couponCode = PQgetvalue(cartRes, 0, 2);
+            } else {
+                PGresult* insertRes = PQexecParams(dbConn, "INSERT INTO shopping_carts (user_id) VALUES ($1) RETURNING id", 1, nullptr, cartParams, nullptr, nullptr, 0);
+                if (PQresultStatus(insertRes) == PGRES_TUPLES_OK && PQntuples(insertRes) > 0) {
+                    cartId = PQgetvalue(insertRes, 0, 0);
+                }
+                PQclear(insertRes);
             }
             PQclear(cartRes);
 
