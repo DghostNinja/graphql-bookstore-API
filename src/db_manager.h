@@ -10,6 +10,7 @@ extern std::map<std::string, PGresult*> preparedStatements;
 
 bool connectDatabase();
 bool checkDatabaseConnection();
+bool isDbConnected();
 PGconn* getConnection();
 PGresult* executePrepared(const char* name, const char* sql, int nParams, const char* const* paramValues);
 PGresult* safeExec(const char* sql);

@@ -33,6 +33,13 @@ bool checkDatabaseConnection() {
     return true;
 }
 
+bool isDbConnected() {
+    if (dbConn == nullptr) {
+        return false;
+    }
+    return PQstatus(dbConn) == CONNECTION_OK;
+}
+
 // Auto-reconnect wrapper for queries
 PGresult* safeExec(const char* sql) {
     checkDatabaseConnection();

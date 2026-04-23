@@ -221,9 +221,21 @@ int main() {
     curl_global_init(CURL_GLOBAL_ALL);
     
     cout << "Connecting to database..." << endl;
-    if (!connectDatabase()) {
-        cerr << "Failed to connect to database" << endl;
-        return 1;
+    
+    int maxRetries = 5;
+    int retryDelay = 3;
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        if (connectDatabase()) {
+            break;
+        }
+        cerr << "Database connection attempt " << attempt << " failed, retrying in " << retryDelay << "s..." << endl;
+        sleep(retryDelay);
+        retryDelay *= 2;
+    }
+    
+    if (!isDbConnected()) {
+        cerr << "WARNING: Could not connect to database after " << maxRetries << " attempts" << endl;
+        cerr << "Server will start in degraded mode - some features may not work" << endl;
     }
     
     cleanupPort();
@@ -320,7 +332,8 @@ int main() {
         }
 
         if (isHealthRequest) {
-            string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+            string status = isDbConnected() ? "OK" : "DEGRADED";
+            string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nX-DB-Status: " + status + "\r\nContent-Length: 2\r\n\r\nOK";
             send(clientSocket, response.c_str(), response.length(), 0);
             close(clientSocket);
             continue;

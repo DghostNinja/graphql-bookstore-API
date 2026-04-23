@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for owasp-bookshop on 2026-02-12T21:58:24+01:00
+# fly.toml app configuration file generated for graphql-bookstore on 2026-02-12T21:58:24+01:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -23,8 +23,8 @@ primary_region = 'iad'
 [[http_service.checks]]
   path = "/health"
   interval = "30s"
-  timeout = "5s"
-  grace_period = "10s"
+  timeout = "10s"
+  grace_period = "30s"
 
 [[vm]]
   size = 'shared-cpu-1x'

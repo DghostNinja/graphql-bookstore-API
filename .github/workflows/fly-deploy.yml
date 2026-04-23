@@ -99,8 +99,13 @@ jobs:
             fly apps create --name graphql-bookstore --org personal
           fi
 
-          # Set DATABASE_URL from GitHub secrets
-          fly secrets set DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          # Set DATABASE_URL from GitHub secrets (fallback to placeholder if not set)
+          if [ -n "${{ secrets.DATABASE_URL }}" ]; then
+            fly secrets set DATABASE_URL="${{ secrets.DATABASE_URL }}"
+            echo "DATABASE_URL secret set"
+          else
+            echo "WARNING: DATABASE_URL not set in GitHub secrets!"
+          fi
 
           # Deploy using Docker image from Docker Hub
           fly deploy --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
