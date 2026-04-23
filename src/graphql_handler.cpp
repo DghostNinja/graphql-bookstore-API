@@ -800,6 +800,48 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
                 PQclear(itemsRes);
             }
             response << "]";
+            
+            if (query.empty() || isFieldRequested(query, "subtotal") || isFieldRequested(query, "discount") || isFieldRequested(query, "couponCode") || isFieldRequested(query, "total") || isFieldRequested(query, "tax") || isFieldRequested(query, "shipping")) {
+                PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, cartParams, nullptr, nullptr, 0);
+                if (PQresultStatus(totalsRes) == PGRES_TUPLES_OK && PQntuples(totalsRes) > 0) {
+                    double cartSubtotal = atof(PQgetvalue(totalsRes, 0, 0));
+                    double cartDiscount = atof(PQgetvalue(totalsRes, 0, 1));
+                    std::string cartCoupon = PQgetvalue(totalsRes, 0, 2) ? std::string(PQgetvalue(totalsRes, 0, 2)) : "";
+                    double cartTotal = atof(PQgetvalue(totalsRes, 0, 3));
+                    
+                    // Calculate tax and shipping on-the-fly
+                    double cartTax = cartSubtotal * 0.08;
+                    double cartShipping = cartSubtotal > 50 ? 0.0 : 5.99;
+                    
+                    if (cartSubtotal > 0 || cartDiscount > 0 || !cartCoupon.empty() || cartTotal > 0) {
+                        response << ",";
+                        if (query.empty() || isFieldRequested(query, "subtotal")) {
+                            response << "\"subtotal\":" << cartSubtotal;
+                        }
+                        if (query.empty() || isFieldRequested(query, "tax")) {
+                            response << ",";
+                            response << "\"tax\":" << cartTax;
+                        }
+                        if (query.empty() || isFieldRequested(query, "shipping")) {
+                            response << ",";
+                            response << "\"shipping\":" << cartShipping;
+                        }
+                        if (query.empty() || isFieldRequested(query, "discount")) {
+                            if (cartDiscount > 0) response << ",";
+                            response << "\"discount\":" << cartDiscount;
+                        }
+                        if (query.empty() || isFieldRequested(query, "couponCode")) {
+                            if (!cartCoupon.empty()) response << ",";
+                            response << "\"couponCode\":\"" << escapeJson(cartCoupon) << "\"";
+                        }
+                        if (query.empty() || isFieldRequested(query, "total")) {
+                            if (cartTotal > 0) response << ",";
+                            response << "\"total\":" << cartTotal;
+                        }
+                    }
+                }
+                PQclear(totalsRes);
+            }
         }
         response << "}";
         firstField = false;
@@ -1319,6 +1361,28 @@ std::string handleMutation(const std::string& query, User& currentUser) {
             response << "}";
         }
         firstField = false;
+        bool addSuccess = (PQresultStatus(res) == PGRES_TUPLES_OK);
+        if (addSuccess) {
+            const char* updateCartParams[1] = {cartId.c_str()};
+            PGresult* itemsSumRes = PQexecParams(dbConn, 
+                "SELECT COALESCE(SUM(COALESCE(ci.unit_price, b.price) * ci.quantity), 0)::decimal FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
+                1, nullptr, updateCartParams, nullptr, nullptr, 0);
+            double cartSum = 0;
+            if (PQresultStatus(itemsSumRes) == PGRES_TUPLES_OK && PQntuples(itemsSumRes) > 0) {
+                cartSum = atof(PQgetvalue(itemsSumRes, 0, 0));
+            }
+            PQclear(itemsSumRes);
+            if (cartSum > 0) {
+                double cartTax = cartSum * 0.08;
+                double cartShipping = cartSum > 50 ? 0.0 : 5.99;
+                double cartTotal = cartSum + cartTax + cartShipping;
+                std::cerr << "[CARTSUM] subtotal=" << cartSum << ", tax=" << cartTax << ", shipping=" << cartShipping << ", total=" << cartTotal << std::endl;
+                const char* updateParams[4] = {std::to_string(cartSum).c_str(), std::to_string(cartTax).c_str(), std::to_string(cartTotal).c_str(), cartId.c_str()};
+                PGresult* upRes = PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = $1, tax = $2, total = $3, updated_at = NOW() WHERE id = $4", 4, nullptr, updateParams, nullptr, nullptr, 0);
+                std::cerr << "[CARTUPDATE] status=" << PQresultStatus(upRes) << std::endl;
+                PQclear(upRes);
+            }
+        }
         PQclear(res);
     } else if (query.find("addToCart(") != std::string::npos) {
         if (!firstField) response << ",";
@@ -1410,14 +1474,28 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                     PQclear(itemsRes);
 
                     double discountAmount = 0;
-                    if (discountType == "percentage") {
+                    
+                    // Check min_order_amount for fixed discounts
+                    if (discountType == "fixed" && subtotal < discountValue) {
+                        if (!firstField) response << ",";
+                        response << "\"applyCoupon\":{";
+                        response << "\"success\":false,";
+                        response << "\"message\":\"Minimum order amount is $" << std::to_string((int)discountValue) << " to use this coupon\"";
+                        response << "}";
+                        firstField = false;
+                    } else if (discountType == "percentage") {
                         discountAmount = subtotal * (discountValue / 100.0);
                     } else {
                         discountAmount = discountValue;
                     }
 
-                    const char* updateParams[3] = {std::to_string(discountAmount).c_str(), couponCode.c_str(), cartId.c_str()};
-                    PGresult* updateRes = PQexecParams(dbConn, "UPDATE shopping_carts SET discount = $1, coupon_code = $2, updated_at = NOW() WHERE id = $3", 3, nullptr, updateParams, nullptr, nullptr, 0);
+                    double taxAmount = subtotal * 0.08;
+                    double shippingAmount = subtotal > 50 ? 0.0 : 5.99;
+                    double totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
+                    if (totalAmount < 0) totalAmount = 0;
+
+                    const char* updateParams[5] = {std::to_string(subtotal).c_str(), std::to_string(discountAmount).c_str(), couponCode.c_str(), std::to_string(totalAmount).c_str(), cartId.c_str()};
+                    PGresult* updateRes = PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = $1, discount = $2, coupon_code = $3, total = $4, updated_at = NOW() WHERE id = $5", 5, nullptr, updateParams, nullptr, nullptr, 0);
                     PQclear(updateRes);
 
                     if (!firstField) response << ",";
@@ -1566,14 +1644,16 @@ std::string handleMutation(const std::string& query, User& currentUser) {
             std::string cartId = "";
             std::string userId = currentUser.id;
             double discount = 0;
+            double subtotal = 0;
             std::string couponCode = "";
             
             const char* cartParams[1] = {userId.c_str()};
-            PGresult* cartRes = PQexecParams(dbConn, "SELECT id, COALESCE(discount, 0), COALESCE(coupon_code, '') FROM shopping_carts WHERE user_id = $1", 1, nullptr, cartParams, nullptr, nullptr, 0);
+            PGresult* cartRes = PQexecParams(dbConn, "SELECT id, COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(subtotal, 0) FROM shopping_carts WHERE user_id = $1", 1, nullptr, cartParams, nullptr, nullptr, 0);
             if (PQresultStatus(cartRes) == PGRES_TUPLES_OK && PQntuples(cartRes) > 0) {
                 cartId = PQgetvalue(cartRes, 0, 0);
                 discount = atof(PQgetvalue(cartRes, 0, 1));
                 couponCode = PQgetvalue(cartRes, 0, 2);
+                subtotal = atof(PQgetvalue(cartRes, 0, 3));
             } else {
                 PGresult* insertRes = PQexecParams(dbConn, "INSERT INTO shopping_carts (user_id) VALUES ($1) RETURNING id", 1, nullptr, cartParams, nullptr, nullptr, 0);
                 if (PQresultStatus(insertRes) == PGRES_TUPLES_OK && PQntuples(insertRes) > 0) {
@@ -1629,9 +1709,42 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                     response << "}";
                     firstField = false;
                 } else {
-                    double tax = subtotal * 0.08;
-                    double shipping = subtotal > 50 ? 0 : 5.99;
-                    double total = subtotal + tax + shipping - discount;
+                    double cartSubtotal = subtotal;
+                    if (cartSubtotal == 0) {
+                        for (const auto& item : checkoutItems) {
+                            cartSubtotal += item.price * item.quantity;
+                        }
+                    }
+                    double tax = 0;
+                    double shipping = 0;
+                    double total = 0;
+                    
+                    // Fetch stored totals from cart
+                    const char* cartTotalParams[1] = {cartId.c_str()};
+                    PGresult* cartTotalRes = PQexecParams(dbConn, 
+                        "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(total, 0) FROM shopping_carts WHERE id = $1",
+                        1, nullptr, cartTotalParams, nullptr, nullptr, 0);
+                    double storedSubtotal = 0;
+                    double storedDiscount = 0;
+                    double storedTotal = 0;
+                    if (PQresultStatus(cartTotalRes) == PGRES_TUPLES_OK && PQntuples(cartTotalRes) > 0) {
+                        storedSubtotal = atof(PQgetvalue(cartTotalRes, 0, 0));
+                        storedDiscount = atof(PQgetvalue(cartTotalRes, 0, 1));
+                        storedTotal = atof(PQgetvalue(cartTotalRes, 0, 2));
+                        std::cerr << "[CHECKOUT] cartId='" << cartId << "', storedSubtotal=" << storedSubtotal << ", storedDiscount=" << storedDiscount << ", storedTotal=" << storedTotal << std::endl;
+                    }
+                    PQclear(cartTotalRes);
+                    
+                    // Use stored cart total if available (coupon was applied), otherwise calculate
+                    if (storedTotal > 0 && storedDiscount > 0) {
+                        // Cart has coupon applied - use stored values
+                        total = storedTotal;  // Already includes discount, tax, shipping
+                    } else {
+                        // No coupon - calculate fresh
+                        tax = cartSubtotal * 0.08;
+                        shipping = cartSubtotal > 50 ? 0 : 5.99;
+                        total = cartSubtotal + tax + shipping;
+                    }
                     if (total < 0) total = 0;
 
                     std::string orderNumber = "ORD-" + std::to_string(time(nullptr));

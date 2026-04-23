@@ -17,12 +17,12 @@
     },
     {
       "key": "username",
-      "value": "user",
+      "value": "newuser",
       "type": "string"
     },
     {
       "key": "password",
-      "value": "password123",
+      "value": "test123",
       "type": "string"
     },
     {
@@ -293,7 +293,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"query\":\"{ cart { id items { id book { id title author { firstName } price } quantity } subtotal tax discount couponCode total } }\"}"
+              "raw": "{\"query\":\"{ cart { id items { id book { id title author { firstName } price } quantity } subtotal tax shipping discount couponCode total } }\"}"
             }
           }
         },
