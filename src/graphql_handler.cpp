@@ -1398,7 +1398,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
 
                     double subtotal = 0;
                     const char* cartParam[1] = {cartId.c_str()};
-                    PGresult* itemsRes = PQexecParams(dbConn, "SELECT ci.quantity, b.price FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1", 1, nullptr, cartParam, nullptr, nullptr, 0);
+                    PGresult* itemsRes = PQexecParams(dbConn, "SELECT ci.quantity, COALESCE(ci.unit_price, b.price) as price FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1", 1, nullptr, cartParam, nullptr, nullptr, 0);
                     if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
                         int rows = PQntuples(itemsRes);
                         for (int i = 0; i < rows; i++) {
@@ -1437,7 +1437,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         firstField = false;
     }
 
-    if (query.find("createOrder(") != std::string::npos && !currentUser.id.empty()) {
+    if ((query.find("createOrder(") != std::string::npos || query.find("createOrder ") != std::string::npos) && !currentUser.id.empty()) {
         std::cerr << "[CREATEORDER] user='" << currentUser.username << "'" << std::endl;
         std::string cartId = "";
         std::string userId = currentUser.id;
@@ -1542,7 +1542,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
             }
             PQclear(res);
         }
-    } else if (query.find("createOrder(") != std::string::npos) {
+    } else if (query.find("createOrder") != std::string::npos && query.find("createOrder(") == std::string::npos) {
         if (!firstField) response << ",";
         response << "\"createOrder\":{\"success\":false,\"message\":\"Authentication required\"}";
         firstField = false;
