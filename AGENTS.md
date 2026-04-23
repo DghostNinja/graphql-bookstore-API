@@ -537,17 +537,45 @@ The server contains additional advanced features for expert-level testing:
 6. **Debug Endpoints**: Timing information available for debugging
 
 ### Rate Limiting
-357: The server includes built-in rate limiting to prevent abuse:
-358: - **100 requests per 60 seconds** per IP address
-359: - **5-minute block** when limit exceeded
-360: - **Automatic cleanup** of old entries every 60 seconds
-361: 
-362: Rate limit configuration constants in `src/main.cpp`:
-363: ```cpp
-364: #define RATE_LIMIT_WINDOW_SECONDS 60
-365: #define RATE_LIMIT_MAX_REQUESTS 100
-366: #define RATE_LIMIT_BLOCK_DURATION 300
-367: ```
+The server includes built-in rate limiting to prevent abuse:
+- **100 requests per 60 seconds** per IP address
+- **5-minute block** when limit exceeded
+- **Automatic cleanup** of old entries every 60 seconds
+
+Rate limit configuration constants in `src/main.cpp`:
+```cpp
+#define RATE_LIMIT_WINDOW_SECONDS 60
+#define RATE_LIMIT_MAX_REQUESTS 100
+#define RATE_LIMIT_BLOCK_DURATION 300
+```
+
+### Cold Start & Idle Connection Handling
+The server is configured for optimal performance when traffic resumes after idle periods:
+
+**fly.toml Configuration:**
+```toml
+[http_service]
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+
+[[http_service.checks]]
+  path = "/health"
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "10s"
+```
+
+**Database Auto-Reconnect (src/db_manager.cpp):**
+- `checkDatabaseConnection()` - Auto-detects lost connections and reconnects
+- `safeExec()` / `safeExecParams()` - Wrapper functions that ensure connection before queries
+- `getConnection()` - Returns live connection, auto-reconnects if needed
+
+**How It Works:**
+1. Fly.io machine stays warm → no cold start latency (~15s delay eliminated)
+2. Neon DB goes idle → connection drops
+3. Next request triggers `checkDatabaseConnection()` → auto-reconnect
+4. No manual intervention required
 368: 
 369: ### API Documentation Page
 370: The landing page (`generateLandingHTML()` in `src/main.cpp`) provides:
