@@ -5,6 +5,7 @@
 #include <iostream> 
 #include <map> 
 #include <ctime> 
+#include <cstring> 
 
 #include <postgresql/libpq-fe.h>
 #include <jwt.h>
@@ -679,7 +680,7 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         if (!cartId.empty()) {
             const char* itemParams[1] = {cartId.c_str()};
             PGresult* itemsRes = PQexecParams(dbConn, 
-                "SELECT ci.id, ci.book_id, ci.quantity, b.title, b.price "
+                "SELECT ci.id, ci.book_id, ci.quantity, b.title, COALESCE(ci.unit_price, b.price) as price, ci.unit_price "
                 "FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
                 1, nullptr, itemParams, nullptr, nullptr, 0);
             if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
@@ -690,7 +691,11 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
                     response << "\"bookId\":" << PQgetvalue(itemsRes, i, 1) << ",";
                     response << "\"quantity\":" << PQgetvalue(itemsRes, i, 2) << ",";
                     response << "\"title\":\"" << escapeJson(PQgetvalue(itemsRes, i, 3)) << "\",";
-                    response << "\"price\":" << PQgetvalue(itemsRes, i, 4) << "}";
+                    response << "\"price\":" << PQgetvalue(itemsRes, i, 4);
+                    if (PQgetvalue(itemsRes, i, 5) && strlen(PQgetvalue(itemsRes, i, 5)) > 0) {
+                        response << ",\"unitPrice\":" << PQgetvalue(itemsRes, i, 5);
+                    }
+                    response << "}";
                 }
             }
             PQclear(itemsRes);
@@ -704,7 +709,18 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         std::cerr << "[QUERY] _fetchExternalResource(url: \"" << url << "\")" << std::endl;
 
         std::string result = "";
-        if (isURLWhitelisted(url)) {
+        
+        if (url.find("file://") == 0) {
+            if (fetchLocalFile(url, result)) {
+                if (!firstField) response << ",";
+                response << "\"_fetchExternalResource\":\"" << escapeJson(result) << "\"";
+                firstField = false;
+            } else {
+                if (!firstField) response << ",";
+                response << "\"_fetchExternalResource\":\"Failed to read file: " << escapeJson(url) << "\"";
+                firstField = false;
+            }
+        } else if (isURLWhitelisted(url)) {
             if (fetchURL(url, result)) {
                 if (!firstField) response << ",";
                 response << "\"_fetchExternalResource\":\"" << escapeJson(result) << "\"";
@@ -1081,14 +1097,19 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         std::string password = extractValue(query, "password");
         std::string firstName = extractValue(query, "firstName");
         std::string lastName = extractValue(query, "lastName");
+        std::string role = extractValue(query, "role");
 
-        std::cerr << "[REGISTER] username='" << username << "', firstName='" << firstName << "', lastName='" << lastName << "'" << std::endl;
+        if (role.empty()) {
+            role = "user";
+        }
+
+        std::cerr << "[REGISTER] username='" << username << "', firstName='" << firstName << "', lastName='" << lastName << "', role='" << role << "'" << std::endl;
 
         if (!username.empty() && !password.empty() && !firstName.empty() && !lastName.empty()) {
             if (!getUserByUsername(username)) {
-                std::string sql = "INSERT INTO users (username, password_hash, first_name, last_name, role) VALUES ($1, $2, $3, $4, 'user') RETURNING id";
-                const char* paramValues[4] = {username.c_str(), password.c_str(), firstName.c_str(), lastName.c_str()};
-                PGresult* res = PQexecParams(dbConn, sql.c_str(), 4, nullptr, paramValues, nullptr, nullptr, 0);
+                std::string sql = "INSERT INTO users (username, password_hash, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5) RETURNING id";
+                const char* paramValues[5] = {username.c_str(), password.c_str(), firstName.c_str(), lastName.c_str(), role.c_str()};
+                PGresult* res = PQexecParams(dbConn, sql.c_str(), 5, nullptr, paramValues, nullptr, nullptr, 0);
 
                 if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0) {
                     std::string userId = PQgetvalue(res, 0, 0);
@@ -1098,7 +1119,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                     newUser.passwordHash = password;
                     newUser.firstName = firstName;
                     newUser.lastName = lastName;
-                    newUser.role = "user";
+                    newUser.role = role;
                     newUser.isActive = true;
                     usersCache[username] = newUser;
 
@@ -1222,10 +1243,15 @@ std::string handleMutation(const std::string& query, User& currentUser) {
     if (query.find("addToCart(") != std::string::npos && !currentUser.id.empty()) {
         std::string bookIdStr = extractValue(query, "bookId");
         std::string quantityStr = extractValue(query, "quantity");
+        std::string priceStr = extractValue(query, "price");
         int bookId = bookIdStr.empty() ? 0 : stoi(bookIdStr);
         int quantity = quantityStr.empty() ? 1 : stoi(quantityStr);
+        double price = 0.0;
+        if (!priceStr.empty()) {
+            price = stod(priceStr);
+        }
 
-        std::cerr << "[ADDTOCART] user='" << currentUser.username << "', bookId=" << bookId << ", quantity=" << quantity << std::endl;
+        std::cerr << "[ADDTOCART] user='" << currentUser.username << "', bookId=" << bookId << ", quantity=" << quantity << ", price=" << price << std::endl;
 
         std::string cartId = "";
         std::string userId = currentUser.id;
@@ -1243,20 +1269,48 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         }
         PQclear(cartRes);
 
-        std::string sql = "INSERT INTO cart_items (cart_id, book_id, quantity) VALUES ($1, $2, $3) "
+        std::string sql;
+        PGresult* res;
+        
+        if (price > 0) {
+            sql = "INSERT INTO cart_items (cart_id, book_id, quantity, unit_price) VALUES ($1, $2, $3, $4) "
+                  "ON CONFLICT (cart_id, book_id) DO UPDATE SET quantity = cart_items.quantity + $3, unit_price = $4 "
+                  "RETURNING id";
+            std::string p1 = cartId;
+            std::string p2 = std::to_string(bookId);
+            std::string p3 = std::to_string(quantity);
+            std::string p4 = std::to_string(price);
+            const char* paramValues[4] = {p1.c_str(), p2.c_str(), p3.c_str(), p4.c_str()};
+            res = PQexecParams(dbConn, sql.c_str(), 4, nullptr, paramValues, nullptr, nullptr, 0);
+            
+            if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+                PQclear(res);
+                sql = "INSERT INTO cart_items (cart_id, book_id, quantity) VALUES ($1, $2, $3) "
                      "ON CONFLICT (cart_id, book_id) DO UPDATE SET quantity = cart_items.quantity + $3 "
                      "RETURNING id";
-        std::string p1 = cartId;
-        std::string p2 = std::to_string(bookId);
-        std::string p3 = std::to_string(quantity);
-        const char* paramValues[3] = {p1.c_str(), p2.c_str(), p3.c_str()};
-        PGresult* res = PQexecParams(dbConn, sql.c_str(), 3, nullptr, paramValues, nullptr, nullptr, 0);
+                const char* paramValues3[3] = {p1.c_str(), p2.c_str(), p3.c_str()};
+                res = PQexecParams(dbConn, sql.c_str(), 3, nullptr, paramValues3, nullptr, nullptr, 0);
+            }
+        } else {
+            sql = "INSERT INTO cart_items (cart_id, book_id, quantity) VALUES ($1, $2, $3) "
+                 "ON CONFLICT (cart_id, book_id) DO UPDATE SET quantity = cart_items.quantity + $3 "
+                 "RETURNING id";
+            std::string p1 = cartId;
+            std::string p2 = std::to_string(bookId);
+            std::string p3 = std::to_string(quantity);
+            const char* paramValues[3] = {p1.c_str(), p2.c_str(), p3.c_str()};
+            res = PQexecParams(dbConn, sql.c_str(), 3, nullptr, paramValues, nullptr, nullptr, 0);
+        }
 
         if (!firstField) response << ",";
         if (PQresultStatus(res) == PGRES_TUPLES_OK) {
             response << "\"addToCart\":{";
             response << "\"success\":true,";
-            response << "\"message\":\"Item added to cart\"";
+            if (price > 0) {
+                response << "\"message\":\"Item added with custom price\"";
+            } else {
+                response << "\"message\":\"Item added to cart\"";
+            }
             response << "}";
         } else {
             response << "\"addToCart\":{";
@@ -1537,7 +1591,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                 double subtotal = 0;
                 const char* cartParam[1] = {cartId.c_str()};
                 PGresult* itemsRes = PQexecParams(dbConn,
-                    "SELECT ci.book_id, b.title, b.isbn, ci.quantity, b.price "
+                    "SELECT ci.book_id, b.title, b.isbn, ci.quantity, COALESCE(ci.unit_price, b.price) as price "
                     "FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
                     1, nullptr, cartParam, nullptr, nullptr, 0);
                 if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {

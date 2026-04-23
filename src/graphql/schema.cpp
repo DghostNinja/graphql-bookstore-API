@@ -91,7 +91,7 @@ type Mutation {
     deleteReview(id: ID!): Boolean!
     
     # Cart mutations
-    addToCart(bookId: ID!, quantity: Int = 1): Cart!
+    addToCart(bookId: ID!, quantity: Int = 1, price: Float): Cart!
     removeFromCart(bookId: ID!): Cart!
     updateCartItem(bookId: ID!, quantity: Int!): Cart!
     clearCart: Cart!
@@ -456,6 +456,7 @@ input RegisterInput {
     city: String
     state: String
     zipCode: String
+    role: String
 }
 
 input UpdateProfileInput {

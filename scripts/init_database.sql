@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
     cart_id UUID REFERENCES shopping_carts(id),
     book_id INTEGER REFERENCES books(id),
     quantity INTEGER DEFAULT 1,
+    unit_price DECIMAL(10,2),
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_cart_book UNIQUE (cart_id, book_id)
 );
