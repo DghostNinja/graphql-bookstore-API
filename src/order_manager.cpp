@@ -21,7 +21,8 @@ void loadCartCache() {
     PGresult* res = PQexec(dbConn, "SELECT ci.id, ci.cart_id, ci.book_id, ci.quantity, COALESCE(b.price, 0) as price "
                                      "FROM cart_items ci "
                                      "JOIN shopping_carts sc ON ci.cart_id = sc.id "
-                                     "JOIN users u ON sc.user_id = u.id");
+                                     "JOIN users u ON sc.user_id = u.id "
+                                     "JOIN books b ON ci.book_id = b.id");
 
     if (PQresultStatus(res) == PGRES_TUPLES_OK) {
         int rows = PQntuples(res);

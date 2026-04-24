@@ -5,9 +5,11 @@ PGconn* dbConn = nullptr;
 std::map<std::string, PGresult*> preparedStatements;
 
 bool connectDatabase() {
-    std::string connStr = getenv("DATABASE_URL") ? getenv("DATABASE_URL") : "postgresql://bookstore_user:bookstore_password@localhost:5432/bookstore_db";
+    std::string connStr = getenv("DATABASE_URL") ? getenv("DATABASE_URL") : 
+                          (getenv("DB_CONNECTION_STRING") ? getenv("DB_CONNECTION_STRING") : 
+                          "postgresql://bookstore_user:bookstore_password@localhost:5432/bookstore_db");
     
-    std::cerr << "[DB] Connecting to database..." << std::endl;
+    std::cerr << "[DB] Connecting to: " << connStr << std::endl;
 
     dbConn = PQconnectdb(connStr.c_str());
     if (PQstatus(dbConn) != CONNECTION_OK) {
