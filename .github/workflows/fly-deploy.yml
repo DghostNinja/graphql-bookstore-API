@@ -41,7 +41,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-- name: Build FRESH Docker image with LATEST source code
+      - name: Build FRESH Docker image with LATEST source code
         run: |
           docker build --no-cache -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
           docker build --no-cache -t ${{ env.DOCKER_IMAGE }}:latest .
