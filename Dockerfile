@@ -15,6 +15,7 @@ WORKDIR /app
 
 # Copy source code FIRST (for better Docker layer caching)
 COPY src/ src/
+COPY include/ include/
 COPY graphql.json .
 COPY scripts/ scripts/
 COPY build.sh .
@@ -23,7 +24,7 @@ COPY *.sh .
 # Build the server - fail if build fails
 RUN set -e && \
     echo "=== Building Bookstore Server ===" && \
-    g++ -std=c++17 -pthread -o bookstore-server src/main.cpp \
+    g++ -std=c++17 -I include -pthread -o bookstore-server src/main.cpp \
         src/utils.cpp \
         src/user_manager.cpp \
         src/book_manager.cpp \
