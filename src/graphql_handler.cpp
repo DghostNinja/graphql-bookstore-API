@@ -794,8 +794,7 @@ const char* itemParams[1] = {cartId.c_str()};
                 PQclear(itemsRes);
             }
             response << "]";
-            
-            // Always output totals when items exist and totals requested
+            // Always output totals when cart exists
             if (!cartId.empty()) {
                 const char* totalsParams[1] = {cartId.c_str()};
                 PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, totalsParams, nullptr, nullptr, 0);

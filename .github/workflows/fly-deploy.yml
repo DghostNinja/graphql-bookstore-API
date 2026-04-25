@@ -95,8 +95,8 @@ jobs:
           curl -L https://fly.io/install.sh | sh
           export PATH="$HOME/.fly/bin:$PATH"
           
-          # Deploy with fresh image (not cached!)
-          fly deploy --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }} --yes
+          # Deploy with fresh image (force pull to ensure latest)
+          fly deploy --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }} --yes --force-no-cache
 
       - name: Verify production deployment
         run: |
