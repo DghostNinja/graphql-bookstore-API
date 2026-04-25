@@ -794,39 +794,39 @@ const char* itemParams[1] = {cartId.c_str()};
                 PQclear(itemsRes);
             }
             response << "]";
-            // Cart totals query - outputs subtotal, tax, shipping, discount, couponCode, total
-            // Always output totals when cart exists
-            if (!cartId.empty()) {
-                const char* totalsParams[1] = {cartId.c_str()};
-                PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, totalsParams, nullptr, nullptr, 0);
-                if (PQresultStatus(totalsRes) == PGRES_TUPLES_OK && PQntuples(totalsRes) > 0) {
-                    double cartSubtotal = atof(PQgetvalue(totalsRes, 0, 0));
-                    double cartDiscount = atof(PQgetvalue(totalsRes, 0, 1));
-                    std::string cartCoupon = PQgetvalue(totalsRes, 0, 2) ? std::string(PQgetvalue(totalsRes, 0, 2)) : "";
-                    double cartTotal = atof(PQgetvalue(totalsRes, 0, 3));
-                    
-                    // Calculate tax and shipping
-                    double cartTax = cartSubtotal * 0.08;
-                    double cartShipping = cartSubtotal > 50 ? 0.0 : 5.99;
-                    double calcTotal = cartSubtotal + cartTax + cartShipping - cartDiscount;
-                    
-                    // Output totals
-                    response << ",";
-                    response << "\"subtotal\":" << cartSubtotal;
-                    response << ",\"tax\":" << cartTax;
-                    response << ",\"shipping\":" << cartShipping;
-                    if (cartDiscount > 0) {
-                        response << ",\"discount\":" << cartDiscount;
-                    }
-                    if (!cartCoupon.empty()) {
-                        response << ",\"couponCode\":\"" << escapeJson(cartCoupon) << "\"";
-                    }
-                    if (cartTotal > 0) {
-                        response << ",\"total\":" << cartTotal;
-                    }
+        }
+        // Cart totals query - outputs subtotal, tax, shipping, discount, couponCode, total
+        // Always output totals when cart exists (independent of items field)
+        if (!cartId.empty()) {
+            const char* totalsParams[1] = {cartId.c_str()};
+            PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, totalsParams, nullptr, nullptr, 0);
+            if (PQresultStatus(totalsRes) == PGRES_TUPLES_OK && PQntuples(totalsRes) > 0) {
+                double cartSubtotal = atof(PQgetvalue(totalsRes, 0, 0));
+                double cartDiscount = atof(PQgetvalue(totalsRes, 0, 1));
+                std::string cartCoupon = PQgetvalue(totalsRes, 0, 2) ? std::string(PQgetvalue(totalsRes, 0, 2)) : "";
+                double cartTotal = atof(PQgetvalue(totalsRes, 0, 3));
+                
+                // Calculate tax and shipping
+                double cartTax = cartSubtotal * 0.08;
+                double cartShipping = cartSubtotal > 50 ? 0.0 : 5.99;
+                double calcTotal = cartSubtotal + cartTax + cartShipping - cartDiscount;
+                
+                // Output totals
+                response << ",";
+                response << "\"subtotal\":" << cartSubtotal;
+                response << ",\"tax\":" << cartTax;
+                response << ",\"shipping\":" << cartShipping;
+                if (cartDiscount > 0) {
+                    response << ",\"discount\":" << cartDiscount;
                 }
-                PQclear(totalsRes);
+                if (!cartCoupon.empty()) {
+                    response << ",\"couponCode\":\"" << escapeJson(cartCoupon) << "\"";
+                }
+                if (cartTotal > 0) {
+                    response << ",\"total\":" << cartTotal;
+                }
             }
+            PQclear(totalsRes);
         }
         response << "}";
         firstField = false;
