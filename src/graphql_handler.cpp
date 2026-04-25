@@ -1439,11 +1439,13 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         double cartTotal = cartSum + cartTax + cartShipping;
         
         if (cartSum > 0) {
-            const char* updateParams[4] = {std::to_string(cartSum).c_str(), std::to_string(cartTax).c_str(), std::to_string(cartTotal).c_str(), cartId.c_str()};
-            PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = $1, tax = $2, total = $3, updated_at = NOW() WHERE id = $4", 4, nullptr, updateParams, nullptr, nullptr, 0);
+            // Recalculate totals fresh (clear old coupon since cart changed)
+            const char* updateParams[5] = {std::to_string(cartSum).c_str(), std::to_string(cartTax).c_str(), std::to_string(cartTotal).c_str(), "0", cartId.c_str()};
+            PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = $1, tax = $2, total = $3, discount = $4, coupon_code = NULL, updated_at = NOW() WHERE id = $5", 5, nullptr, updateParams, nullptr, nullptr, 0);
         } else {
-            // Clear totals when cart is empty
-            PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = 0, tax = 0, discount = 0, coupon_code = NULL, total = 0, updated_at = NOW() WHERE id = $1", 1, nullptr, updateCartParams, nullptr, nullptr, 0);
+            // Clear totals AND coupon when cart is empty
+            const char* clearParams[1] = {cartId.c_str()};
+            PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = 0, tax = 0, discount = 0, coupon_code = NULL, total = 0, updated_at = NOW() WHERE id = $1", 1, nullptr, clearParams, nullptr, nullptr, 0);
         }
     } else if (query.find("removeFromCart(") != std::string::npos) {
         if (!firstField) response << ",";
@@ -1984,20 +1986,76 @@ if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
 
         if (!url.empty()) {
             std::string eventsJson;
+            
+            // Extract events - handle GraphQL array format ["event1", "event2"]
             if (events.empty()) {
                 eventsJson = "[\"*\"]";
-            } else if (events[0] == '[') {
-                eventsJson = events;
-            } else {
+            } else if (events.find('[') != std::string::npos) {
+                // Has brackets - extract content between them
+                size_t bracketStart = events.find('[');
+                size_t bracketEnd = events.find(']');
+                if (bracketEnd > bracketStart) {
+                    std::string arrayContent = events.substr(bracketStart + 1, bracketEnd - bracketStart - 1);
+                    // Parse each quoted item
+                    eventsJson = "[";
+                    size_t pos = 0;
+                    size_t start = 0;
+                    bool firstItem = true;
+                    while ((pos = arrayContent.find(',', start)) != std::string::npos) {
+                        std::string item = arrayContent.substr(start, pos - start);
+                        // Find quoted string and extract it
+                        size_t q1 = item.find('"');
+                        size_t q2 = item.find('"', q1 + 1);
+                        if (q1 != std::string::npos && q2 != std::string::npos && q2 > q1) {
+                            if (!firstItem) eventsJson += ",";
+                            eventsJson += "\"" + item.substr(q1 + 1, q2 - q1 - 1) + "\"";
+                            firstItem = false;
+                        }
+                        start = pos + 1;
+                    }
+                    // Last item
+                    std::string item = arrayContent.substr(start);
+                    size_t q1 = item.find('"');
+                    size_t q2 = item.find('"', q1 + 1);
+                    if (q1 != std::string::npos && q2 != std::string::npos && q2 > q1) {
+                        if (!firstItem) eventsJson += ",";
+                        eventsJson += "\"" + item.substr(q1 + 1, q2 - q1 - 1) + "\"";
+                    }
+                    eventsJson += "]";
+                } else {
+                    eventsJson = "[\"*\"]";
+                }
+            } else if (!events.empty() && events.find(',') != std::string::npos) {
+                // Comma-separated without brackets
                 eventsJson = "[";
                 size_t start = 0;
                 size_t pos = events.find(',');
+                bool firstItem = true;
                 while (pos != std::string::npos) {
-                    eventsJson += "\"" + events.substr(start, pos - start) + "\",";
+                    std::string item = events.substr(start, pos - start);
+                    // Trim whitespace
+                    size_t first = item.find_first_not_of(" \t\"");
+                    size_t last = item.find_last_not_of(" \t\"");
+                    if (first != std::string::npos) {
+                        if (!firstItem) eventsJson += ",";
+                        eventsJson += "\"" + item.substr(first, last - first + 1) + "\"";
+                        firstItem = false;
+                    }
                     start = pos + 1;
                     pos = events.find(',', start);
                 }
-                eventsJson += "\"" + events.substr(start) + "\"]";
+                // Last item
+                std::string item = events.substr(start);
+                size_t first = item.find_first_not_of(" \t\"");
+                size_t last = item.find_last_not_of(" \t\"");
+                if (first != std::string::npos) {
+                    if (!firstItem) eventsJson += ",";
+                    eventsJson += "\"" + item.substr(first, last - first + 1) + "\"";
+                }
+                eventsJson += "]";
+            } else {
+                // Single event - just wrap in quotes
+                eventsJson = "[\"" + events + "\"]";
             }
 
             std::string sql = "INSERT INTO webhooks (user_id, url, events, secret) VALUES ($1, $2, $3::jsonb, $4) RETURNING id";
