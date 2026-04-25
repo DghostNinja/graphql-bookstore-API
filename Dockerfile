@@ -24,7 +24,7 @@ COPY *.sh .
 # Build the server - fail if build fails
 RUN set -e && \
     echo "=== Building Bookstore Server ===" && \
-    g++ -std=c++17 -I include -pthread -o bookstore-server src/main.cpp \
+    g++ -std=c++17 -I include -I /usr/include/postgresql -pthread -o bookstore-server src/main.cpp \
         src/utils.cpp \
         src/user_manager.cpp \
         src/book_manager.cpp \
