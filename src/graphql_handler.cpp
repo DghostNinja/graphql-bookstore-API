@@ -805,11 +805,12 @@ const char* itemParams[1] = {cartId.c_str()};
                     std::string cartCoupon = PQgetvalue(totalsRes, 0, 2) ? std::string(PQgetvalue(totalsRes, 0, 2)) : "";
                     double cartTotal = atof(PQgetvalue(totalsRes, 0, 3));
                     
-                    // Calculate tax and shipping on-the-fly
+                    // Calculate tax and shipping
                     double cartTax = cartSubtotal * 0.08;
                     double cartShipping = cartSubtotal > 50 ? 0.0 : 5.99;
+                    double calcTotal = cartSubtotal + cartTax + cartShipping - cartDiscount;
                     
-                    // ALWAYS show totals when items exist
+                    // Output totals
                     response << ",";
                     response << "\"subtotal\":" << cartSubtotal;
                     response << ",\"tax\":" << cartTax;
