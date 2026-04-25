@@ -179,7 +179,7 @@ std::string CartManager::updateCartItem(const std::string& userId, const std::st
         conn->clearResult(cartResult);
         json error;
         error["success"] = false;
-        error["message"] = "Cart not found";
+        error["message"] = "No cart found. Add items to cart first with addToCart mutation.";
         return error.dump();
     }
     
@@ -249,7 +249,7 @@ std::string CartManager::applyCoupon(const std::string& userId, const std::strin
         conn->clearResult(cartResult);
         json error;
         error["success"] = false;
-        error["message"] = "Cart not found";
+        error["message"] = "No cart found. Add items to cart first with addToCart mutation.";
         return error.dump();
     }
     

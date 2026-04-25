@@ -438,7 +438,8 @@ int main() {
                                     else if (c == 't') value += '\t';
                                     else if (c == 'r') value += '\r';
                                     else if (c == '\\') value += '\\';
-                                    else if (c != '"') value += c;
+                                    else if (c == '"') value += '"';
+                                    else value += c;
                                     escaped = false;
                                 } else if (c == '\\') {
                                     escaped = true;

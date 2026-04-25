@@ -587,8 +587,7 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
     }
 
     if (query.find("me {") != std::string::npos ||
-        query.find("me(") != std::string::npos ||
-        (query.find("me") != std::string::npos && query.find("name") == std::string::npos && query.find("__schema") == std::string::npos)) {
+        query.find("me(") != std::string::npos) {
         std::cerr << "[QUERY] me (user: " << currentUser.username << ")" << std::endl;
         if (!currentUser.id.empty()) {
             User* fullUser = getUserByUsername(currentUser.username);
@@ -1430,7 +1429,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
 
             if (cartId.empty()) {
                 if (!firstField) response << ",";
-                response << "\"applyCoupon\":{\"success\":false,\"message\":\"Cart not found\"}";
+                response << "\"applyCoupon\":{\"success\":false,\"message\":\"No cart found. Add items to cart first with addToCart mutation.\"}";
                 firstField = false;
             } else {
                 const char* couponParams[1] = {couponCode.c_str()};

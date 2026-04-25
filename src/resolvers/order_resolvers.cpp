@@ -115,7 +115,7 @@ ResolverResult OrderResolvers::resolveCreateOrder(const ResolverParams& params) 
         if (PQntuples(cartResult) == 0) {
             conn->rollbackTransaction();
             conn->clearResult(cartResult);
-            return ResolverResult::errorResult("Cart not found");
+            return ResolverResult::errorResult("No cart found. Add items to cart first with addToCart mutation.");
         }
         
         std::string cartId = PQgetvalue(cartResult, 0, 0);
