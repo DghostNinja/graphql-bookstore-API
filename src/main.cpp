@@ -427,8 +427,12 @@ int main() {
                 if (queryPos != string::npos) {
                     size_t colonPos = body.find(":", queryPos);
                     if (colonPos != string::npos) {
-                        size_t valueStart = body.find("\"", colonPos + 1);
-                        if (valueStart != string::npos && valueStart < body.length()) {
+                        size_t valueStart = colonPos + 1;
+                        while (valueStart < body.length() && 
+                               (body[valueStart] == ' ' || body[valueStart] == '\t' || body[valueStart] == '\n' || body[valueStart] == '\r')) {
+                            valueStart++;
+                        }
+                        if (valueStart < body.length() && body[valueStart] == '"') {
                             string value;
                             bool escaped = false;
                             for (size_t i = valueStart + 1; i < body.length(); i++) {
