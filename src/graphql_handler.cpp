@@ -1400,19 +1400,28 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         }
         PQclear(cartRes);
 
-        std::string sql = "DELETE FROM cart_items WHERE cart_id = $1 AND book_id = $2";
-        std::string p1 = cartId;
-        std::string p2 = std::to_string(bookId);
-        const char* paramValues[2] = {p1.c_str(), p2.c_str()};
-        PGresult* res = PQexecParams(dbConn, sql.c_str(), 2, nullptr, paramValues, nullptr, nullptr, 0);
-
+        // Check if item exists in cart before deleting
+        const char* checkParams[2] = {cartId.c_str(), std::to_string(bookId).c_str()};
+        PGresult* checkRes = PQexecParams(dbConn, "SELECT id FROM cart_items WHERE cart_id = $1 AND book_id = $2", 2, nullptr, checkParams, nullptr, nullptr, 0);
+        bool itemExists = (PQresultStatus(checkRes) == PGRES_TUPLES_OK && PQntuples(checkRes) > 0);
+        PQclear(checkRes);
+        
         if (!firstField) response << ",";
         response << "\"removeFromCart\":{";
-        response << "\"success\":true,";
-        response << "\"message\":\"Item removed from cart\"";
-        response << "}";
-        firstField = false;
-        PQclear(res);
+        if (itemExists && bookId > 0 && !cartId.empty()) {
+            // Item exists, proceed with deletion
+            std::string p1 = cartId;
+            std::string p2 = std::to_string(bookId);
+            const char* paramValues[2] = {p1.c_str(), p2.c_str()};
+            PGresult* res = PQexecParams(dbConn, "DELETE FROM cart_items WHERE cart_id = $1 AND book_id = $2", 2, nullptr, paramValues, nullptr, nullptr, 0);
+            PQclear(res);
+            
+            response << "\"success\":true,";
+            response << "\"message\":\"Item removed from cart\"";
+        } else {
+            response << "\"success\":false,";
+            response << "\"message\":\"Item not found in cart\"";
+        }
         
         // Update cart totals after removal
         const char* updateCartParams[1] = {cartId.c_str()};
