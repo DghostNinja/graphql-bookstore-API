@@ -794,6 +794,7 @@ const char* itemParams[1] = {cartId.c_str()};
                 PQclear(itemsRes);
             }
             response << "]";
+            // Cart totals query - outputs subtotal, tax, shipping, discount, couponCode, total
             // Always output totals when cart exists
             if (!cartId.empty()) {
                 const char* totalsParams[1] = {cartId.c_str()};
