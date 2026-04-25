@@ -23,6 +23,7 @@
 #include "extra_features.h"
 #include "graphql_handler.h"
 #include "db_manager.h"
+#include "database/connection.h"
 #include "network_manager.h"
 #include "html_generator.h"
 #include "rate_limiter.h"
@@ -236,6 +237,8 @@ int main() {
     if (!isDbConnected()) {
         cerr << "WARNING: Could not connect to database after " << maxRetries << " attempts" << endl;
         cerr << "Server will start in degraded mode - some features may not work" << endl;
+    } else {
+        DatabasePool::getInstance().initialize(DB_CONN, 10);
     }
     
     cleanupPort();

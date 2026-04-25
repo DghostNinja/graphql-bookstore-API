@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16
     container_name: bookstore-postgres
+    hostname: postgres
     environment:
       POSTGRES_PASSWORD: bookstore_password
       POSTGRES_DB: bookstore_db
@@ -14,7 +13,7 @@ services:
       - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/1-schema.sql
       - ./scripts/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bookstore_user"]
+      test: ["CMD-SHELL", "pg_isready -U bookstore_user -d bookstore_db"]
       interval: 10s
       timeout: 5s
       retries: 5
