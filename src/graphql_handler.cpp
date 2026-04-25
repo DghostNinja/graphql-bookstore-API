@@ -795,9 +795,21 @@ const char* itemParams[1] = {cartId.c_str()};
             }
             response << "]";
         }
-        // Cart totals query - outputs subtotal, tax, shipping, discount, couponCode, total
-        // Always output totals when cart exists (independent of items field)
+        
+        // Check if cart has items
+        bool cartHasItems = false;
         if (!cartId.empty()) {
+            const char* checkItemsParams[1] = {cartId.c_str()};
+            PGresult* checkItemsRes = PQexecParams(dbConn, "SELECT COUNT(*) FROM cart_items WHERE cart_id = $1", 1, nullptr, checkItemsParams, nullptr, nullptr, 0);
+            if (PQresultStatus(checkItemsRes) == PGRES_TUPLES_OK && PQntuples(checkItemsRes) > 0) {
+                cartHasItems = atoi(PQgetvalue(checkItemsRes, 0, 0)) > 0;
+            }
+            PQclear(checkItemsRes);
+        }
+        
+        // Cart totals query - outputs subtotal, tax, shipping, discount, couponCode, total
+        // Only output totals when cart has items
+        if (!cartId.empty() && cartHasItems) {
             const char* totalsParams[1] = {cartId.c_str()};
             PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, totalsParams, nullptr, nullptr, 0);
             if (PQresultStatus(totalsRes) == PGRES_TUPLES_OK && PQntuples(totalsRes) > 0) {
@@ -1401,6 +1413,29 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         response << "}";
         firstField = false;
         PQclear(res);
+        
+        // Update cart totals after removal
+        const char* updateCartParams[1] = {cartId.c_str()};
+        PGresult* itemsSumRes = PQexecParams(dbConn, 
+            "SELECT COALESCE(SUM(COALESCE(ci.unit_price, b.price) * ci.quantity), 0) FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
+            1, nullptr, updateCartParams, nullptr, nullptr, 0);
+        double cartSum = 0;
+        if (PQresultStatus(itemsSumRes) == PGRES_TUPLES_OK && PQntuples(itemsSumRes) > 0) {
+            cartSum = atof(PQgetvalue(itemsSumRes, 0, 0));
+        }
+        PQclear(itemsSumRes);
+        
+        double cartTax = cartSum * 0.08;
+        double cartShipping = cartSum > 50 ? 0.0 : 5.99;
+        double cartTotal = cartSum + cartTax + cartShipping;
+        
+        if (cartSum > 0) {
+            const char* updateParams[4] = {std::to_string(cartSum).c_str(), std::to_string(cartTax).c_str(), std::to_string(cartTotal).c_str(), cartId.c_str()};
+            PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = $1, tax = $2, total = $3, updated_at = NOW() WHERE id = $4", 4, nullptr, updateParams, nullptr, nullptr, 0);
+        } else {
+            // Clear totals when cart is empty
+            PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = 0, tax = 0, discount = 0, coupon_code = NULL, total = 0, updated_at = NOW() WHERE id = $1", 1, nullptr, updateCartParams, nullptr, nullptr, 0);
+        }
     } else if (query.find("removeFromCart(") != std::string::npos) {
         if (!firstField) response << ",";
         response << "\"removeFromCart\":{\"success\":false,\"message\":\"Authentication required\"}";
@@ -1767,12 +1802,19 @@ if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
 
                         PGresult* clearCartRes = PQexecParams(dbConn, "DELETE FROM cart_items WHERE cart_id = $1", 1, nullptr, cartParam, nullptr, nullptr, 0);
                         PQclear(clearCartRes);
+                        
+                        // Clear cart totals
+                        PGresult* clearCartTotals = PQexecParams(dbConn, "UPDATE shopping_carts SET subtotal = 0, tax = 0, discount = 0, coupon_code = NULL, total = 0, updated_at = NOW() WHERE id = $1", 1, nullptr, cartParam, nullptr, nullptr, 0);
+                        PQclear(clearCartTotals);
 
                         std::string paymentResult = processPayment(userId, orderId, total, cardNumber, expiry, cvv);
-
+                        
+                        // Check if payment was successful
+                        bool paymentSuccess = paymentResult.find("\"success\":true") != std::string::npos;
+                        
                         if (!firstField) response << ",";
                         response << "\"checkout\":{";
-                        response << "\"success\":true,";
+                        response << "\"success\":" << (paymentSuccess ? "true" : "false") << ",";
                         response << "\"orderId\":\"" << orderId << "\",";
                         response << "\"orderNumber\":\"" << orderNumber << "\",";
                         response << "\"totalAmount\":" << total << ",";
@@ -1780,6 +1822,13 @@ if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
                         response << "\"payment\":" << paymentResult;
                         response << "}";
                         firstField = false;
+                        
+                        // If payment failed, delete the order
+                        if (!paymentSuccess) {
+                            const char* deleteOrderParams[1] = {orderId.c_str()};
+                            PGresult* deleteOrderRes = PQexecParams(dbConn, "DELETE FROM orders WHERE id = $1", 1, nullptr, deleteOrderParams, nullptr, nullptr, 0);
+                            PQclear(deleteOrderRes);
+                        }
                     } else {
                         if (!firstField) response << ",";
                         response << "\"checkout\":{";
