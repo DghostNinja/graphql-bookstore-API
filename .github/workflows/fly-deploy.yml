@@ -33,12 +33,16 @@ jobs:
           echo "=== Files modified in this commit ==="
           git diff --name-only HEAD~1..HEAD 2>/dev/null || git diff --name-only
 
+      - name: Install flyctl
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          echo "$HOME/.fly/bin" >> $GITHUB_PATH
+
+      - name: Authenticate with Fly.io registry
+        run: fly auth docker
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Login to Fly.io registry
-        run: |
-          echo ${{ secrets.FLY_API_TOKEN }} | docker login registry.fly.io -u fly --password-stdin
 
       - name: Build and Verify Docker image
         run: |
@@ -80,13 +84,10 @@ jobs:
       - name: Deploy to Fly.io
         run: |
           docker push ${{ env.IMAGE }}
-          curl -L https://fly.io/install.sh | sh
-          export PATH="$HOME/.fly/bin:$PATH"
           fly deploy --image ${{ env.IMAGE }} --yes
 
       - name: Verify production deployment
         run: |
-          export PATH="$HOME/.fly/bin:$PATH"
           sleep 15
           echo "=== Verifying production ==="
           RESPONSE=$(curl -s --max-time 20 https://graphql-bookstore.fly.dev/graphql -d '{"query":"{ books { id title } }"}')
