@@ -13,6 +13,7 @@ on:
 env:
   DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/graphql
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-test-deploy:
@@ -61,24 +62,28 @@ jobs:
           docker compose -f docker-compose.yml down 2>/dev/null || true
           docker compose -f docker-compose.yml build --no-cache
           docker compose -f docker-compose.yml up -d
-          sleep 20
+          sleep 25
           docker compose ps -a
+          
+          # Verify container is running
+          echo "=== Verifying Docker Compose ==="
+          curl -s --max-time 5 http://localhost:4000/graphql -d '{"query":"{ books { id title } }"}' | grep -q "data" && echo "✅ Server responding on port 4000"
           
           # Test health endpoint
           echo "=== Testing health ==="
-          curl -s --max-time 10 http://localhost:4001/ | head -50
+          curl -s --max-time 10 http://localhost:4000/ | head -50
           
           echo "=== Testing GraphQL ==="
-          curl -s --max-time 10 http://localhost:4001/graphql -d '{"query":"{ books { id title } }"}' | head -50
+          curl -s --max-time 10 http://localhost:4000/graphql -d '{"query":"{ books { id title } }"}' | head -50
 
       - name: Run Test Suite
         run: |
           chmod +x test_api.sh flow.sh
           echo "=== Running API Security Tests ==="
-          API_URL="http://localhost:4001/graphql" ./test_api.sh || true
+          API_URL="http://localhost:4000/graphql" ./test_api.sh
           echo ""
           echo "=== Running User Flow Tests ==="
-          API_URL="http://localhost:4001/graphql" ./flow.sh || true
+          API_URL="http://localhost:4000/graphql" ./flow.sh
 
       - name: Deploy FRESH image to Fly.io
         run: |
