@@ -795,9 +795,9 @@ const char* itemParams[1] = {cartId.c_str()};
             }
             response << "]";
             
-            bool wantsTotals = query.empty() || isFieldRequested(query, "subtotal") || isFieldRequested(query, "discount") || isFieldRequested(query, "couponCode") || isFieldRequested(query, "total") || isFieldRequested(query, "tax") || isFieldRequested(query, "shipping");
-            const char* totalsParams[1] = {cartId.c_str()};
-            if (wantsTotals && !cartId.empty()) {
+            // Always output totals when items exist and totals requested
+            if (!cartId.empty()) {
+                const char* totalsParams[1] = {cartId.c_str()};
                 PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, totalsParams, nullptr, nullptr, 0);
                 if (PQresultStatus(totalsRes) == PGRES_TUPLES_OK && PQntuples(totalsRes) > 0) {
                     double cartSubtotal = atof(PQgetvalue(totalsRes, 0, 0));

@@ -82,7 +82,7 @@ jobs:
           echo "=== Running API Security Tests ==="
           API_URL="http://localhost:4000/graphql" ./test_api.sh
           echo ""
-          echo "=== Running User Flow Tests ==="
+          echo "=== Running User Flow Tests. ==="
           API_URL="http://localhost:4000/graphql" ./flow.sh
 
       - name: Deploy FRESH image to Fly.io
