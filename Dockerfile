@@ -36,6 +36,7 @@ RUN set -e && \
         src/html_generator.cpp \
         src/rate_limiter.cpp \
         src/payment_handler.cpp \
+        src/database/connection.cpp \
         -lpq -ljwt -lcurl -lssl -lcrypto \
         && echo "=== Build SUCCESS ===" \
         && ls -la bookstore-server
