@@ -677,14 +677,14 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         response << "\"items\":[";
         
         if (!cartId.empty()) {
-            const char* itemParams[1] = {cartId.c_str()};
-            PGresult* itemsRes = PQexecParams(dbConn, 
-                "SELECT ci.id, ci.book_id, ci.quantity, b.title, COALESCE(ci.unit_price, b.price) as price, ci.unit_price "
-                "FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
-                1, nullptr, itemParams, nullptr, nullptr, 0);
-            if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
-                int rows = PQntuples(itemsRes);
-                for (int i = 0; i < rows; i++) {
+const char* itemParams[1] = {cartId.c_str()};
+                PGresult* itemsRes = PQexecParams(dbConn, 
+                    "SELECT ci.id, ci.book_id, ci.quantity, b.title, COALESCE(ci.unit_price, b.price) as price, ci.unit_price "
+                    "FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
+                    1, nullptr, itemParams, nullptr, nullptr, 0);
+                if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
+                    int rows = PQntuples(itemsRes);
+                    for (int i = 0; i < rows; i++) {
                     if (i > 0) response << ",";
                     response << "{\"id\":\"" << PQgetvalue(itemsRes, i, 0) << "\",";
                     response << "\"bookId\":" << PQgetvalue(itemsRes, i, 1) << ",";
@@ -761,38 +761,33 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
             if (!cartId.empty()) {
                 const char* itemParams[1] = {cartId.c_str()};
                 PGresult* itemsRes = PQexecParams(dbConn, 
-                    "SELECT ci.id, ci.book_id, ci.quantity, b.title, b.price "
-                    "FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1",
+                    "SELECT ci.id, ci.book_id, ci.quantity, b.id, b.title, b.price, a.name "
+                    "FROM cart_items ci JOIN books b ON ci.book_id = b.id LEFT JOIN authors a ON b.author_id = a.id WHERE ci.cart_id = $1",
                     1, nullptr, itemParams, nullptr, nullptr, 0);
                 if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
                     int rows = PQntuples(itemsRes);
                     for (int i = 0; i < rows; i++) {
+                        std::string authorName = PQgetvalue(itemsRes, i, 6) ? std::string(PQgetvalue(itemsRes, i, 6)) : "";
+                        std::string firstName = authorName;
+                        std::string lastName = "";
+                        size_t spacePos = authorName.find(' ');
+                        if (spacePos != std::string::npos) {
+                            firstName = authorName.substr(0, spacePos);
+                            lastName = authorName.substr(spacePos + 1);
+                        }
                         if (i > 0) response << ",";
-                        response << "{";
-                        bool itemFirst = true;
-                        if (query.empty() || isFieldRequestedInContext(query, "items", "id")) {
-                            response << "\"id\":\"" << PQgetvalue(itemsRes, i, 0) << "\"";
-                            itemFirst = false;
-                        }
-                        if (query.empty() || isFieldRequestedInContext(query, "items", "bookId")) {
-                            if (!itemFirst) response << ",";
-                            response << "\"bookId\":" << PQgetvalue(itemsRes, i, 1);
-                            itemFirst = false;
-                        }
-                        if (query.empty() || isFieldRequestedInContext(query, "items", "quantity")) {
-                            if (!itemFirst) response << ",";
-                            response << "\"quantity\":" << PQgetvalue(itemsRes, i, 2);
-                            itemFirst = false;
-                        }
-                        if (query.empty() || isFieldRequestedInContext(query, "items", "title")) {
-                            if (!itemFirst) response << ",";
-                            response << "\"title\":\"" << escapeJson(PQgetvalue(itemsRes, i, 3)) << "\"";
-                            itemFirst = false;
-                        }
-                        if (query.empty() || isFieldRequestedInContext(query, "items", "price")) {
-                            if (!itemFirst) response << ",";
-                            response << "\"price\":" << PQgetvalue(itemsRes, i, 4);
-                        }
+                        response << "{\"id\":\"" << PQgetvalue(itemsRes, i, 0) << "\",";
+                        response << "\"bookId\":" << PQgetvalue(itemsRes, i, 1) << ",";
+                        response << "\"quantity\":" << PQgetvalue(itemsRes, i, 2) << ",";
+                        response << "\"book\":{";
+                        response << "\"id\":\"" << PQgetvalue(itemsRes, i, 3) << "\",";
+                        response << "\"title\":\"" << escapeJson(PQgetvalue(itemsRes, i, 4)) << "\",";
+                        response << "\"price\":" << PQgetvalue(itemsRes, i, 5) << ",";
+                        response << "\"author\":{";
+                        response << "\"firstName\":\"" << escapeJson(firstName) << "\",";
+                        response << "\"lastName\":\"" << escapeJson(lastName) << "\"";
+                        response << "}";
+                        response << "}";
                         response << "}";
                     }
                 }
@@ -800,8 +795,10 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
             }
             response << "]";
             
-            if (query.empty() || isFieldRequested(query, "subtotal") || isFieldRequested(query, "discount") || isFieldRequested(query, "couponCode") || isFieldRequested(query, "total") || isFieldRequested(query, "tax") || isFieldRequested(query, "shipping")) {
-                PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, cartParams, nullptr, nullptr, 0);
+            bool wantsTotals = query.empty() || isFieldRequested(query, "subtotal") || isFieldRequested(query, "discount") || isFieldRequested(query, "couponCode") || isFieldRequested(query, "total") || isFieldRequested(query, "tax") || isFieldRequested(query, "shipping");
+            const char* totalsParams[1] = {cartId.c_str()};
+            if (wantsTotals && !cartId.empty()) {
+                PGresult* totalsRes = PQexecParams(dbConn, "SELECT COALESCE(subtotal, 0), COALESCE(discount, 0), COALESCE(coupon_code, ''), COALESCE(total, 0) FROM shopping_carts WHERE id = $1", 1, nullptr, totalsParams, nullptr, nullptr, 0);
                 if (PQresultStatus(totalsRes) == PGRES_TUPLES_OK && PQntuples(totalsRes) > 0) {
                     double cartSubtotal = atof(PQgetvalue(totalsRes, 0, 0));
                     double cartDiscount = atof(PQgetvalue(totalsRes, 0, 1));
@@ -1448,9 +1445,10 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                     double subtotal = 0;
                     const char* cartParam[1] = {cartId.c_str()};
                     PGresult* itemsRes = PQexecParams(dbConn, "SELECT ci.quantity, COALESCE(ci.unit_price, b.price) as price FROM cart_items ci JOIN books b ON ci.book_id = b.id WHERE ci.cart_id = $1", 1, nullptr, cartParam, nullptr, nullptr, 0);
-                    if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
-                        int rows = PQntuples(itemsRes);
-                        for (int i = 0; i < rows; i++) {
+if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
+                    int rows = PQntuples(itemsRes);
+                    std::cerr << "[CART] cartId='" << cartId << "', rows=" << rows << ", query='" << query.substr(0, 50) << "'" << std::endl;
+                    for (int i = 0; i < rows; i++) {
                             double price = atof(PQgetvalue(itemsRes, i, 1));
                             int qty = atoi(PQgetvalue(itemsRes, i, 0));
                             subtotal += price * qty;
