@@ -277,3 +277,12 @@ CREATE TABLE IF NOT EXISTS system_config (
 -- Grant privileges
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO public;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO public;
+
+-- Migration: Add missing columns for existing databases
+-- Run these ALTER TABLE statements if columns don't exist
+ALTER TABLE shopping_carts ADD COLUMN IF NOT EXISTS subtotal DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE shopping_carts ADD COLUMN IF NOT EXISTS tax DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE shopping_carts ADD COLUMN IF NOT EXISTS discount DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE shopping_carts ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50);
+ALTER TABLE shopping_carts ADD COLUMN IF NOT EXISTS total DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE cart_items ADD COLUMN IF NOT EXISTS unit_price DECIMAL(10,2);
