@@ -1,0 +1,6 @@
+.cache/
+*.o
+*.so
+*-docker/
+.DS_Store
+.env

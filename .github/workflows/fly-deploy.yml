@@ -96,7 +96,7 @@ jobs:
           export PATH="$HOME/.fly/bin:$PATH"
           
           # Deploy with fresh image (force pull to ensure latest)
-          fly deploy --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }} --yes --force-no-cache
+          fly deploy --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }} --yes
 
       - name: Verify production deployment
         run: |
