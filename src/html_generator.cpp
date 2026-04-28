@@ -1398,6 +1398,7 @@ string generateLandingHTML() {
 
         <div class="coupon-carousel">
             <div class="coupon-carousel-title">Available Coupon Codes</div>
+            <div id="couponStatusMsg" class="status-msg"></div>
             <div class="coupon-card active" data-index="0">
                 <div class="coupon-code" onclick="copyCoupon('WELCOME10')">WELCOME10</div>
                 <div class="coupon-discount">10% Off</div>
@@ -3092,11 +3093,19 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
             }
         }
         
+        function showCouponStatus(msg, type) {
+            var el = document.getElementById("couponStatusMsg");
+            el.textContent = msg;
+            el.className = "status-msg status-" + type;
+            el.style.display = "block";
+            setTimeout(function() { el.style.display = "none"; }, 2000);
+        }
+        
         function copyCoupon(code) {
             navigator.clipboard.writeText(code).then(function() {
-                showQueryStatus('Coupon code copied: ' + code, 'success');
+                showCouponStatus('Coupon code copied: ' + code, 'success');
             }).catch(function() {
-                showQueryStatus('Failed to copy code', 'error');
+                showCouponStatus('Failed to copy code', 'error');
             });
         }
         
