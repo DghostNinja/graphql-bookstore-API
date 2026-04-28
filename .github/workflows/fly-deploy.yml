@@ -53,33 +53,15 @@ jobs:
         run: |
           chmod +x test_api.sh flow.sh
           
-          # Start postgres for tests
-          docker compose -f docker-compose.yml up -d postgres
-          sleep 10
-          
-          # Wait for postgres to be healthy
-          until docker compose -f docker-compose.yml exec -T postgres pg_isready -U bookstore_user -d bookstore_db; do
-            sleep 2
-          done
-          
-          # Run API with the built image
-          docker run -d --name test-bookstore -p 4000:4000 \
-            --network host \
-            -e DATABASE_URL="postgresql://bookstore_user:bookstore_password@localhost:5432/bookstore_db" \
-            -e DB_CONNECTION_STRING="dbname=bookstore_db user=bookstore_user password=bookstore_password host=localhost port=5432" \
-            -e JWT_SECRET="CHANGE_ME_IN_PRODUCTION_real_jwt_secret_key_2024" \
-            -e PORT="4000" \
-            ${{ env.IMAGE }}
-          
-          sleep 15
+          # Start services using docker-compose (both postgres and api)
+          docker compose up -d
+          sleep 20
           
           echo "=== Running API Security Tests ==="
           API_URL="http://localhost:4000/graphql" ./test_api.sh
           echo ""
           echo "=== Running User Flow Tests ==="
           API_URL="http://localhost:4000/graphql" ./flow.sh
-          
-          docker stop test-bookstore
 
       - name: Deploy to Fly.io
         run: |
@@ -103,5 +85,4 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          docker stop test-bookstore 2>/dev/null || true
-          docker compose -f docker-compose.yml down 2>/dev/null || true
+          docker compose down 2>/dev/null || true
