@@ -736,6 +736,125 @@ const char* itemParams[1] = {cartId.c_str()};
         }
     }
 
+    if (query.find("processXMLData") != std::string::npos) {
+        std::string xml = extractValue(query, "xml");
+        std::cerr << "[QUERY] processXMLData(xml: \"" << xml << "\")" << std::endl;
+        
+        std::string parsedData = "";
+        if (!xml.empty()) {
+            size_t start = xml.find('<');
+            size_t end = xml.find('>');
+            if (start != std::string::npos && end != std::string::npos && end > start) {
+                std::string tag = xml.substr(start + 1, end - start - 1);
+                std::string content = "";
+                size_t contentStart = end + 1;
+                size_t contentEnd = xml.find('<', contentStart);
+                if (contentEnd != std::string::npos && contentEnd > contentStart) {
+                    content = xml.substr(contentStart, contentEnd - contentStart);
+                }
+                parsedData = "{\"tag\":\"" + escapeJson(tag) + "\",\"content\":\"" + escapeJson(content) + "\"}";
+            }
+        }
+        
+        if (!firstField) response << ",";
+        if (!parsedData.empty()) {
+            response << "\"processXMLData\":" << parsedData;
+        } else {
+            response << "\"processXMLData\":{\"parsed\":false}";
+        }
+        firstField = false;
+    }
+
+    if (query.find("decodeJWT") != std::string::npos) {
+        std::string token = extractValue(query, "token");
+        std::cerr << "[QUERY] decodeJWT" << std::endl;
+        
+        bool valid = false;
+        std::string algorithm = "unknown";
+        
+        if (!token.empty()) {
+            size_t firstDot = token.find('.');
+            if (firstDot != std::string::npos && firstDot > 0) {
+                std::string header = token.substr(0, firstDot);
+                std::string decoded = header;
+                while (decoded.length() % 4 != 0) decoded += '=';
+                size_t pos = decoded.find('-');
+                if (pos != std::string::npos) {
+                    decoded.replace(pos, 1, "+");
+                }
+                pos = decoded.find('_');
+                if (pos != std::string::npos) {
+                    decoded.replace(pos, 1, "/");
+                }
+                valid = true;
+                if (decoded.find("HS256") != std::string::npos) {
+                    algorithm = "HS256";
+                } else if (decoded.find("HS384") != std::string::npos) {
+                    algorithm = "HS384";
+                } else if (decoded.find("HS512") != std::string::npos) {
+                    algorithm = "HS512";
+                } else if (decoded.find("RS256") != std::string::npos) {
+                    algorithm = "RS256";
+                }
+            }
+        }
+        
+        if (!firstField) response << ",";
+        response << "\"decodeJWT\":{";
+        response << "\"valid\":" << (valid ? "true" : "false");
+        response << ",\"algorithm\":\"" << algorithm << "\"";
+        response << "}";
+        firstField = false;
+    }
+
+    if (query.find("manageCache") != std::string::npos) {
+        std::string key = extractValue(query, "key");
+        std::string value = extractValue(query, "value");
+        std::cerr << "[QUERY] manageCache(key: \"" << key << "\")" << std::endl;
+        
+        static std::map<std::string, std::string> cacheStore;
+        
+        if (!key.empty()) {
+            if (!value.empty()) {
+                cacheStore[key] = value;
+            } else if (cacheStore.count(key)) {
+                value = cacheStore[key];
+            }
+        }
+        
+        if (!firstField) response << ",";
+        response << "\"manageCache\":{";
+        response << "\"success\":true";
+        if (!key.empty()) {
+            response << ",\"key\":\"" << escapeJson(key) << "\"";
+        }
+        if (!value.empty()) {
+            response << ",\"value\":\"" << escapeJson(value) << "\"";
+        }
+        response << "}";
+        firstField = false;
+    }
+
+    if (query.find("handleRecursiveQuery") != std::string::npos) {
+        std::string depthStr = extractIntValue(query, "depth");
+        int depth = depthStr.empty() ? 1 : stoi(depthStr);
+        if (depth < 1) depth = 1;
+        if (depth > 10) depth = 10;
+        std::cerr << "[QUERY] handleRecursiveQuery(depth: " << depth << ")" << std::endl;
+        
+        std::string result = "depth:" + std::to_string(depth);
+        for (int i = 0; i < depth; i++) {
+            result += ",level_" + std::to_string(i) + ":ok";
+        }
+        
+        if (!firstField) response << ",";
+        response << "\"handleRecursiveQuery\":{";
+        response << "\"result\":\"" << escapeJson(result) << "\"";
+        response << ",\"depth\":" << depth;
+        response << "}";
+        firstField = false;
+    }
+
     if (query.find("cart") != std::string::npos && !currentUser.id.empty()) {
         std::cerr << "[QUERY] cart (user: " << currentUser.username << ")" << std::endl;
         std::string cartId = "";
@@ -1243,15 +1362,23 @@ std::string handleMutation(const std::string& query, User& currentUser) {
     }
 
     if (query.find("updateProfile(") != std::string::npos && !currentUser.id.empty()) {
-        currentUser.firstName = extractValue(query, "firstName");
-        currentUser.lastName = extractValue(query, "lastName");
-        currentUser.phone = extractValue(query, "phone");
-        currentUser.address = extractValue(query, "address");
-        currentUser.city = extractValue(query, "city");
-        currentUser.state = extractValue(query, "state");
-        currentUser.zipCode = extractValue(query, "zipCode");
-        currentUser.country = extractValue(query, "country");
-        currentUser.role = extractValue(query, "role");
+        std::string newFirstName = extractValue(query, "firstName");
+        std::string newLastName = extractValue(query, "lastName");
+        std::string newPhone = extractValue(query, "phone");
+        std::string newAddress = extractValue(query, "address");
+        std::string newCity = extractValue(query, "city");
+        std::string newState = extractValue(query, "state");
+        std::string newZipCode = extractValue(query, "zipCode");
+        std::string newCountry = extractValue(query, "country");
+        
+        if (!newFirstName.empty()) currentUser.firstName = newFirstName;
+        if (!newLastName.empty()) currentUser.lastName = newLastName;
+        if (!newPhone.empty()) currentUser.phone = newPhone;
+        if (!newAddress.empty()) currentUser.address = newAddress;
+        if (!newCity.empty()) currentUser.city = newCity;
+        if (!newState.empty()) currentUser.state = newState;
+        if (!newZipCode.empty()) currentUser.zipCode = newZipCode;
+        if (!newCountry.empty()) currentUser.country = newCountry;
 
         std::cerr << "[UPDATEPROFILE] user='" << currentUser.username << "', firstName='" << currentUser.firstName << "', lastName='" << currentUser.lastName << "'" << std::endl;
 
@@ -1269,6 +1396,12 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         };
         PGresult* res = PQexecParams(dbConn, sql.c_str(), 9, nullptr, paramValues, nullptr, nullptr, 0);
         PQclear(res);
+        
+        PGresult* userRes = PQexecParams(dbConn, "SELECT id, username, first_name, last_name, role, phone, address, city, state, zip_code, country, is_active FROM users WHERE id = $1", 1, nullptr, paramValues + 8, nullptr, nullptr, 0);
+        if (PQresultStatus(userRes) == PGRES_TUPLES_OK && PQntuples(userRes) > 0) {
+            currentUser.role = PQgetvalue(userRes, 0, 4) ? PQgetvalue(userRes, 0, 4) : "";
+        }
+        PQclear(userRes);
 
         if (!firstField) response << ",";
         response << "\"updateProfile\":" << userToJson(currentUser, query);
@@ -1285,6 +1418,16 @@ std::string handleMutation(const std::string& query, User& currentUser) {
         std::string priceStr = extractValue(query, "price");
         int bookId = bookIdStr.empty() ? 0 : stoi(bookIdStr);
         int quantity = quantityStr.empty() ? 1 : stoi(quantityStr);
+        
+        // Validate quantity
+        if (quantity <= 0) {
+            if (!firstField) response << ",";
+            response << "\"addToCart\":{";
+            response << "\"success\":false,";
+            response << "\"message\":\"Quantity must be greater than 0\"";
+            response << "}";
+            firstField = false;
+        } else {
         double price = 0.0;
         if (!priceStr.empty()) {
             price = stod(priceStr);
@@ -1379,6 +1522,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
             }
         }
         PQclear(res);
+        }
     } else if (query.find("addToCart(") != std::string::npos) {
         if (!firstField) response << ",";
         response << "\"addToCart\":{\"success\":false,\"message\":\"Authentication required\"}";
@@ -1907,6 +2051,15 @@ if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
         int bookId = bookIdStr.empty() ? 0 : stoi(bookIdStr);
         int rating = ratingStr.empty() ? 5 : stoi(ratingStr);
 
+        // Validate rating
+        if (rating < 1 || rating > 5) {
+            if (!firstField) response << ",";
+            response << "\"createReview\":{";
+            response << "\"success\":false,";
+            response << "\"message\":\"Rating must be between 1 and 5\"";
+            response << "}";
+            firstField = false;
+        } else {
         std::cerr << "[CREATEREVIEW] user='" << currentUser.username << "', bookId=" << bookId << ", rating=" << rating << std::endl;
 
         std::string sql = "INSERT INTO reviews (user_id, book_id, rating, comment, is_verified_purchase) "
@@ -1932,6 +2085,7 @@ if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
         }
         firstField = false;
         PQclear(res);
+        }
     } else if (query.find("createReview(") != std::string::npos) {
         if (!firstField) response << ",";
         response << "\"createReview\":{\"success\":false,\"message\":\"Authentication required\"}";
@@ -2070,7 +2224,13 @@ if (PQresultStatus(itemsRes) == PGRES_TUPLES_OK) {
                 std::cerr << "[REGISTERWEBHOOK] webhook created, id='" << webhookId << "'" << std::endl;
                 response << "\"registerWebhook\":{";
                 response << "\"success\":true,";
-                response << "\"webhookId\":\"" << webhookId << "\"";
+                response << "\"message\":\"Webhook registered successfully\",";
+                response << "\"webhook\":{";
+                response << "\"id\":\"" << webhookId << "\",";
+                response << "\"url\":\"" << escapeJson(url) << "\",";
+                response << "\"events\":" << eventsJson << ",";
+                response << "\"isActive\":true";
+                response << "}";
                 response << "}";
             } else {
                 response << "\"registerWebhook\":{";

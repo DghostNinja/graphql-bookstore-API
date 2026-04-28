@@ -202,11 +202,11 @@ class BookstoreMCPClient:
         '''
         return self._execute(query)
     
-    def purchase_cart(self, card_number: str, expiry: str, cvv: str) -> dict:
-        """Purchase cart with payment."""
+    def checkout(self, card_number: str, expiry: str, cvv: str) -> dict:
+        """Process checkout with payment."""
         query = '''
-        mutation PurchaseCart($cardNumber: String!, $expiry: String!, $cvv: String!) {
-            purchaseCart(cardNumber: $cardNumber, expiry: $expiry, cvv: $cvv) {
+        mutation Checkout($cardNumber: String!, $expiry: String!, $cvv: String!) {
+            checkout(cardNumber: $cardNumber, expiry: $expiry, cvv: $cvv) {
                 success
                 orderId
                 message
@@ -573,6 +573,12 @@ def test_webhook(webhook_id: int) -> dict:
     """Test a webhook."""
     client = get_client()
     return client.test_webhook(webhook_id)
+
+
+def logout() -> dict:
+    """Logout and clear token."""
+    client = get_client()
+    return client.logout()
 
 
 def admin_stats() -> dict:

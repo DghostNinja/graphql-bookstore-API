@@ -337,7 +337,7 @@ query { _proInventory }
 
 # PAYMENT WARNING
 
-The checkout and purchaseCart mutations will return a warning:
+The checkout mutation will return a warning:
 ```
 "warning": "Do not use real card details - this is a test environment"
 ```

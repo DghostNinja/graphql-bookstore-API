@@ -140,7 +140,7 @@ Tests the complete user journey through the API:
   STEP 17: PURCHASE CART (PAYMENT)       
 ==========================================
 Request: Purchase cart contents
-Response: {"data":{"purchaseCart":{"success":true,"orderId":"465e4d82..."...
+Response: {"data":{"checkout":{"success":true,"orderId":"465e4d82..."...
 Order ID: 465e4d82-1949-4497-b9c4-8c8287ab970d
 Total Amount: $52.4192
    PASS: Purchase successful (Order ID: 465e4d82...)
@@ -471,7 +471,8 @@ mutation { createOrder() { success orderId } }
 |-------|-------------|---------------|\n| `me` | Get current authenticated user | Yes |\n| `books` | List all books with optional search and category filter | No |\n| `book(id)` | Get a specific book by ID | No |\n| `cart` | Get user\'s shopping cart | Yes |\n| `orders` | Get user\'s orders | Yes |\n| `bookReviews(bookId)` | Get reviews for a specific book | No |\n| `myReviews` | Get current user\'s reviews | Yes |\n| `webhooks` | Get user\'s registered webhooks | Yes |\n| `_internalUserSearch(username)` | Internal user search | No |\n| `_fetchExternalResource(url)` | Fetch external resource by URL | No |\n| `_searchAdvanced(query)` | Advanced search | No |\n| `_adminStats` | Admin statistics | No |\n| `_adminAllOrders` | All orders | No |\n| `_adminAllPayments` | All payment transactions | No |\n| `_batchQuery` | GraphQL batch queries bypass rate limiting | No |\n| `processXMLData` | XXE vulnerability in XML processing | No |\n| `applyCoupon` | Race condition in coupon application | No |\n| `decodeJWT` | JWT algorithm confusion attack | No |\n| `manageCache` | HTTP cache poisoning via headers | No |\n| `handleRecursiveQuery` | Deep recursion attack via nested queries | No |\n
 ### Available Mutations
 | Mutation | Description | Auth Required |\n|----------|-------------|---------------|\n| `register(username, firstName, lastName, password)` | Register a new user | No |\n| `login(username, password)` | Login and get JWT token | No |\n| `updateProfile(...)` | Update user profile | Yes |\n| `addToCart(bookId, quantity)` | Add item to shopping cart | Yes |\n| `removeFromCart(bookId)` | Remove item from shopping cart | Yes |\n| `applyCoupon(code)` | Apply coupon code to cart | Yes |\n| `createOrder()` | Create order from cart (without payment) | Yes |
-| `checkout(cardNumber, expiry, cvv)` | Create order and process payment | Yes |\n| `purchaseCart(cardNumber, expiry, cvv)` | Charge vulnbank card for cart items | Yes |\n| `cancelOrder(orderId)` | Cancel an order | Yes |\n| `createReview(bookId, rating, comment)` | Create a review | Yes |\n| `deleteReview(reviewId)` | Delete a review | Yes |\n| `registerWebhook(url, events, secret)` | Register a webhook URL | Yes |\n| `testWebhook(webhookId)` | Test a webhook | Yes |\n
+| `checkout(cardNumber, expiry, cvv)` | Create order and process payment | Yes |
+| `cancelOrder(orderId)` | Cancel an order | Yes |\n| `createReview(bookId, rating, comment)` | Create a review | Yes |\n| `deleteReview(reviewId)` | Delete a review | Yes |\n| `registerWebhook(url, events, secret)` | Register a webhook URL | Yes |\n| `testWebhook(webhookId)` | Test a webhook | Yes |\n
 ### Recent Features Added
 - **Field Selection**: All queries now return only requested fields (e.g., `{ books { id title } }` returns only id and title). Fixed proper nested field selection for cart, orders, and other nested queries.
 - **JWT Enhancements**: Tokens now include `iat` (issued at) and `exp` (expires in 6 hours), with proper expiration validation. Expired tokens are now rejected.
@@ -480,7 +481,7 @@ mutation { createOrder() { success orderId } }
 - **Authors Cache**: Authors are loaded at startup for nested queries
 - **Shopping Cart System**: Full cart functionality with add/remove items
 - **Order Management**: Create orders from cart, cancel orders
-- **Unified Checkout**: New `checkout` mutation combines createOrder + purchaseCart in one atomic operation
+- **Unified Checkout**: New `checkout` mutation creates order and processes payment in one atomic operation
 - **Review System**: Create and delete reviews
 - **Webhook System**: Register webhooks to receive real-time notifications for order and payment events (order.created, order.paid, order.cancelled, payment.completed, payment.failed, review.created). Includes SSRF vulnerability via testWebhook
 - **Logout Mutation**: New `logout` mutation that tells client to discard JWT token (note: JWT is stateless so server cannot invalidate existing tokens)
@@ -852,7 +853,7 @@ The API returns proper HTTP status codes for authentication and authorization er
 | `addToCart` | `{"addToCart":{"success":false,"message":"Authentication required"}}` |
 | `removeFromCart` | `{"removeFromCart":{"success":false,"message":"Authentication required"}}` |
 | `createOrder` | `{"createOrder":{"success":false,"message":"Authentication required"}}` |
-| `purchaseCart` | `{"purchaseCart":{"success":false,"message":"Authentication required"}}` |
+| `checkout` | `{"checkout":{"success":false,"message":"Authentication required"}}` |
 | `cancelOrder` | `{"cancelOrder":{"success":false,"message":"Authentication required"}}` |
 | `createReview` | `{"createReview":{"success":false,"message":"Authentication required"}}` |
 | `deleteReview` | `{"deleteReview":{"success":false,"message":"Authentication required"}}` |

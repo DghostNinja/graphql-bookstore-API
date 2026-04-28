@@ -3,12 +3,14 @@ services:
     image: postgres:16
     container_name: bookstore-postgres
     hostname: postgres
+    networks:
+      - bookstore-network
     environment:
       POSTGRES_PASSWORD: bookstore_password
       POSTGRES_DB: bookstore_db
       POSTGRES_USER: bookstore_user
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/1-schema.sql
       - ./scripts/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
@@ -23,6 +25,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: bookstore-api
+    networks:
+      - bookstore-network
     ports:
       - "4000:4000"
     depends_on:
@@ -33,3 +37,7 @@ services:
       DB_CONNECTION_STRING: "dbname=bookstore_db user=bookstore_user password=bookstore_password host=postgres port=5432"
       JWT_SECRET: "CHANGE_ME_IN_PRODUCTION_real_jwt_secret_key_2024"
       PORT: "4000"
+
+networks:
+  bookstore-network:
+    driver: bridge

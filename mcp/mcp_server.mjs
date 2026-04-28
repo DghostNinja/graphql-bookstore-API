@@ -212,10 +212,10 @@ class BookstoreMCPClient {
     return this._execute(query);
   }
 
-  async purchaseCart(cardNumber, expiry, cvv) {
+  async checkout(cardNumber, expiry, cvv) {
     const query = `
       mutation {
-        purchaseCart(cardNumber: "${cardNumber}", expiry: "${expiry}", cvv: "${cvv}") {
+        checkout(cardNumber: "${cardNumber}", expiry: "${expiry}", cvv: "${cvv}") {
           success
           orderId
           message
@@ -359,6 +359,20 @@ class BookstoreMCPClient {
       }
     `;
     return this._execute(query);
+  }
+
+  async logout() {
+    const query = `
+      mutation {
+        logout {
+          success
+          message
+        }
+      }
+    `;
+    const data = await this._execute(query);
+    this.token = null;
+    return data.logout;
   }
 
   async adminStats() {
@@ -527,8 +541,8 @@ const tools = [
     },
   },
   {
-    name: 'bookstore_purchase_cart',
-    description: 'Purchase cart items with payment',
+    name: 'bookstore_checkout',
+    description: 'Process checkout with payment',
     inputSchema: {
       type: 'object',
       properties: {
@@ -658,6 +672,14 @@ const tools = [
     },
   },
   {
+    name: 'bookstore_logout',
+    description: 'Logout and clear token',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
     name: 'bookstore_admin_stats',
     description: 'Get admin statistics',
     inputSchema: {
@@ -714,8 +736,8 @@ async function handleToolCall(toolName, args) {
         return await client.orders();
       case 'bookstore_create_order':
         return await client.createOrder();
-      case 'bookstore_purchase_cart':
-        return await client.purchaseCart(
+      case 'bookstore_checkout':
+        return await client.checkout(
           args.cardNumber || '4111111111111111',
           args.expiry || '12/25',
           args.cvv || '123'
@@ -742,6 +764,8 @@ async function handleToolCall(toolName, args) {
         return await client.webhooks();
       case 'bookstore_test_webhook':
         return await client.testWebhook(args.webhookId);
+      case 'bookstore_logout':
+        return await client.logout();
       case 'bookstore_admin_stats':
         return await client.adminStats();
       case 'bookstore_admin_orders':
