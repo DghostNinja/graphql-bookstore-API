@@ -119,6 +119,7 @@ string generatePlaygroundHTML() {
            "            .then(r => r.json())\n"
            "            .then(data => {\n"
            "                if (data.data.register && data.data.register.success) {\n"
+           "                    if (typeof posthog !== 'undefined') posthog.capture('user_registered', { username: username });\n"
            "                    localStorage.setItem('token', data.data.register.token);\n"
            "                    showStatus('Registration successful!');\n"
            "                } else {\n"
@@ -142,6 +143,7 @@ string generatePlaygroundHTML() {
            "            .then(r => r.json())\n"
            "            .then(data => {\n"
            "                if (data.data.login && data.data.login.success) {\n"
+           "                    if (typeof posthog !== 'undefined') posthog.capture('user_login', { username: username, role: data.data.login.user?.role });\n"
            "                    localStorage.setItem('token', data.data.login.token);\n"
            "                    showStatus('Login successful!');\n"
            "                } else {\n"
@@ -1276,6 +1278,17 @@ string generateLandingHTML() {
             .doc-nav-btn.next { margin-left: 0; }
         }
     </style>
+    
+    <!-- PostHog Analytics -->
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetPersonPropertiesForFlags getGroupProperty reset get_distinct_id getGroups get_session_id get_session_replay_url createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing captureException getPageViewId debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('phc_nSTPbaXeSZM5xUMvRRbqwXWiwZcf8viiopikDBQq3YNS', {
+            api_host: 'https://us.i.posthog.com',
+            person_profiles: 'always',
+            capture_pageview: true,
+            capture_pageleave: true
+        });
+    </script>
 </head>
 <body>
     <div class="glow glow-1"></div>
@@ -2924,6 +2937,7 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
         }
 
         function runQuery() {
+            if (typeof posthog !== 'undefined') posthog.capture('query_run', { authenticated: !!token });
             var query = document.getElementById("queryInput").value.trim();
             if (!query) {
                 document.getElementById("responseArea").textContent = "Please enter a query first.";
@@ -2975,6 +2989,7 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
                 if (d.data && d.data.login && d.data.login.success) {
                     token = d.data.login.token;
                     localStorage.setItem("token", token);
+                    if (typeof posthog !== 'undefined') posthog.capture('user_login', { username: user });
                     disp.textContent = "Token: " + token.substring(0, 25) + "...";
                     disp.style.display = "block";
                     showLoginStatus("Login successful!", "success");
@@ -3006,6 +3021,7 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
                 if (d.data && d.data.register && d.data.register.success) {
                     token = d.data.register.token;
                     localStorage.setItem("token", token);
+                    if (typeof posthog !== 'undefined') posthog.capture('user_registered', { username: user });
                     disp.textContent = "Token: " + token.substring(0, 25) + "...";
                     disp.style.display = "block";
                     showRegStatus("Registration successful!", "success");
@@ -3098,6 +3114,9 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
             el.textContent = msg;
             el.className = "status-msg status-" + type;
             el.style.display = "block";
+            if (type === 'success' && typeof posthog !== 'undefined') {
+                posthog.capture('coupon_copied', { code: msg.split(': ')[1] || 'unknown' });
+            }
             setTimeout(function() { el.style.display = "none"; }, 2000);
         }
         
@@ -3135,6 +3154,7 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
         }
 
         function logout() {
+            if (typeof posthog !== 'undefined') posthog.capture('user_logout');
             token = "";
             localStorage.removeItem("token");
             document.getElementById("loginTokenDisplay").style.display = "none";

@@ -77,11 +77,21 @@ See `mcp/README.md` for detailed documentation.
 
 ```bash
 # Build and run with docker-compose
-docker-compose up -d
+docker compose up -d
 
-# Server will be available at http://localhost:4000
-# Database runs automatically in container
+# Server: http://localhost:4000
+# Database: localhost:5433 (Postgres 16)
 ```
+
+### Verify Setup
+
+Open http://localhost:4000 in your browser, or run:
+
+```bash
+curl -s http://localhost:4000/health
+```
+
+Expected response: `OK`
 
 ### Option 2: Direct Build
 
@@ -188,7 +198,8 @@ This environment includes realistic implementations of all OWASP API Security To
 │   ├── rate_limiter.cpp      # Rate limiting logic
 │   └── payment_handler.cpp   # Payment processing
 ├── scripts/
-│   └── init_database.sql     # Database schema and seed data
+│   ├── init_database.sql     # Database schema
+│   └── seed.sql              # Seed data (books, users)
 ├── mcp/                      # MCP server for AI/LLM integration
 ├── build.sh                  # Build script
 ├── docker-compose.yml        # Docker deployment
