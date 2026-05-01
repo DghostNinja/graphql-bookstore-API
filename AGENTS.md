@@ -494,7 +494,7 @@ mutation { createOrder() { success orderId } }
 - **Pro Vulnerabilities**: 6 additional expert-level security vulnerabilities
 
 ### Hidden Pro Vulnerabilities
-The server contains 6 hidden expert-level vulnerabilities:
+The server contains 7 hidden expert-level vulnerabilities:
 
 | Query | Description |
 |-------|-------------|
@@ -504,6 +504,7 @@ The server contains 6 hidden expert-level vulnerabilities:
 | `decodeJWT` | JWT algorithm confusion attack |
 | `manageCache` | HTTP cache poisoning via headers |
 | `handleRecursiveQuery` | Deep recursion attack via nested queries |
+| `login mutation` | SQL injection in login (string concatenation in SQL query) |
 
 ### Hidden Pro Books (via `_proInventory`)
 The server contains 6 hidden books with advanced security research content:

@@ -1359,28 +1359,39 @@ std::string handleMutation(const std::string& query, User& currentUser) {
     if (query.find("login(") != std::string::npos) {
         std::string username = extractValue(query, "username");
         std::string password = extractValue(query, "password");
-        
+
         std::cerr << "[LOGIN] username='" << username << "', password='" << password << "'" << std::endl;
 
         if (!username.empty() && !password.empty()) {
-            User* user = getUserByUsername(username);
-            if (user && user->passwordHash == password) {
-                std::string token = generateJWT(*user);
-                currentUser = *user;
+            std::string sql = "SELECT id, username, password_hash, first_name, last_name, role FROM users WHERE username = '" + username + "' AND password_hash = '" + password + "'";
+            PGresult* res = PQexec(dbConn, sql.c_str());
 
-                std::string sql = "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1";
-                const char* paramValues[1] = {user->id.c_str()};
-                PGresult* res = PQexecParams(dbConn, sql.c_str(), 1, nullptr, paramValues, nullptr, nullptr, 0);
-                PQclear(res);
+            if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0) {
+                User user;
+                user.id = PQgetvalue(res, 0, 0);
+                user.username = PQgetvalue(res, 0, 1);
+                user.passwordHash = PQgetvalue(res, 0, 2);
+                user.firstName = PQgetvalue(res, 0, 3);
+                user.lastName = PQgetvalue(res, 0, 4);
+                user.role = PQgetvalue(res, 0, 5);
+
+                std::string token = generateJWT(user);
+                currentUser = user;
+
+                std::string updateSql = "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1";
+                const char* paramValues[1] = {user.id.c_str()};
+                PGresult* updRes = PQexecParams(dbConn, updateSql.c_str(), 1, nullptr, paramValues, nullptr, nullptr, 0);
+                PQclear(updRes);
 
                 if (!firstField) response << ",";
                 response << "\"login\":{";
                 response << "\"success\":true,";
                 response << "\"message\":\"Login successful\",";
                 response << "\"token\":\"" << token << "\",";
-                response << "\"user\":" << userToJson(*user, query);
+                response << "\"user\":" << userToJson(user, query);
                 response << "}";
                 firstField = false;
+                PQclear(res);
             } else {
                 if (!firstField) response << ",";
                 response << "\"login\":{";
@@ -1388,6 +1399,7 @@ std::string handleMutation(const std::string& query, User& currentUser) {
                 response << "\"message\":\"Invalid username or password\"";
                 response << "}";
                 firstField = false;
+                PQclear(res);
             }
         }
         else {
