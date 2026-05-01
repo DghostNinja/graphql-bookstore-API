@@ -44,6 +44,24 @@ CREATE TABLE IF NOT EXISTS authors (
     is_active BOOLEAN DEFAULT true
 );
 
+-- Author profiles (secondary data for extended author information)
+CREATE TABLE IF NOT EXISTS author_profiles (
+    id SERIAL PRIMARY KEY,
+    author_id INTEGER UNIQUE REFERENCES authors(id),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(50),
+    zip_code VARCHAR(20),
+    country VARCHAR(100),
+    emergency_contact VARCHAR(255),
+    bank_account_last4 VARCHAR(4),
+    tax_id VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Books table
 CREATE TABLE IF NOT EXISTS books (
     id SERIAL PRIMARY KEY,

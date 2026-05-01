@@ -558,6 +558,7 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         response << "{\"name\":\"_adminStats\"},";
         response << "{\"name\":\"_adminAllOrders\"},";
         response << "{\"name\":\"_adminAllPayments\"},";
+        response << "{\"name\":\"_authorProfile\"},";
         response << "{\"name\":\"_batchQuery\"},";
         response << "{\"name\":\"processXMLData\"},";
         response << "{\"name\":\"applyCoupon\"},";
@@ -1149,6 +1150,44 @@ const char* itemParams[1] = {cartId.c_str()};
         response << "}";
         firstField = false;
         PQclear(res);
+    }
+
+    if (query.find("_authorProfile") != std::string::npos) {
+        std::string authorIdStr = extractValue(query, "authorId");
+        std::cerr << "[QUERY] _authorProfile(authorId: " << authorIdStr << ")" << std::endl;
+
+        int authorId = authorIdStr.empty() ? 0 : atoi(authorIdStr.c_str());
+
+        if (!firstField) response << ",";
+        response << "\"_authorProfile\":{";
+        if (authorId <= 0) {
+            response << "\"error\":\"authorId is required\"";
+        } else {
+            std::string sql = "SELECT ap.email, ap.phone, ap.address, ap.city, ap.state, ap.zip_code, ap.country, ap.emergency_contact, ap.bank_account_last4, ap.tax_id, a.name, a.bio "
+                             "FROM author_profiles ap JOIN authors a ON ap.author_id = a.id WHERE ap.author_id = " + authorIdStr;
+            PGresult* res = PQexec(dbConn, sql.c_str());
+
+            if (PQresultStatus(res) == PGRES_TUPLES_OK && PQntuples(res) > 0) {
+                response << "\"authorId\":" << authorId << ",";
+                response << "\"name\":\"" << escapeJson(PQgetvalue(res, 0, 11)) << "\",";
+                response << "\"email\":\"" << escapeJson(PQgetvalue(res, 0, 0)) << "\",";
+                response << "\"phone\":\"" << escapeJson(PQgetvalue(res, 0, 1)) << "\",";
+                response << "\"address\":\"" << escapeJson(PQgetvalue(res, 0, 2)) << "\",";
+                response << "\"city\":\"" << escapeJson(PQgetvalue(res, 0, 3)) << "\",";
+                response << "\"state\":\"" << escapeJson(PQgetvalue(res, 0, 4)) << "\",";
+                response << "\"zipCode\":\"" << escapeJson(PQgetvalue(res, 0, 5)) << "\",";
+                response << "\"country\":\"" << escapeJson(PQgetvalue(res, 0, 6)) << "\",";
+                response << "\"emergencyContact\":\"" << escapeJson(PQgetvalue(res, 0, 7)) << "\",";
+                response << "\"bankAccountLast4\":\"" << escapeJson(PQgetvalue(res, 0, 8)) << "\",";
+                response << "\"taxId\":\"" << escapeJson(PQgetvalue(res, 0, 9)) << "\",";
+                response << "\"bio\":\"" << escapeJson(PQgetvalue(res, 0, 10)) << "\"";
+            } else {
+                response << "\"error\":\"Author profile not found\"";
+            }
+            PQclear(res);
+        }
+        response << "}";
+        firstField = false;
     }
 
     if (query.find("_adminAllOrders") != std::string::npos) {
