@@ -230,6 +230,23 @@
           }
         },
         {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/graphql",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\":\"mutation { forgotPassword(username: \\\"{{username}}\\\", newPassword: \\\"{{password}}\\\") { success message } }\"}"
+            }
+          }
+        },
+        {
           "name": "Get Current User (Me)",
           "request": {
             "method": "POST",
