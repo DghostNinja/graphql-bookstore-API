@@ -1,0 +1,1 @@
+/usr/bin/c++ -g "CMakeFiles/bookstore-api.dir/src/main.cpp.o" "CMakeFiles/bookstore-api.dir/src/database/connection.cpp.o" -o bookstore-api  -lpq /usr/lib/x86_64-linux-gnu/libjwt.so -lcurl -lpthread -ldl 

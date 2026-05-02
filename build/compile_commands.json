@@ -1,0 +1,86 @@
+[
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/main.cpp.o -c /home/ipsalmy/Test/graphQL/src/main.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/main.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/database/connection.cpp.o -c /home/ipsalmy/Test/graphQL/src/database/connection.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/database/connection.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/database/connection.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/graphql/schema.cpp.o -c /home/ipsalmy/Test/graphQL/src/graphql/schema.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/graphql/schema.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/graphql/schema.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/graphql/resolver.cpp.o -c /home/ipsalmy/Test/graphQL/src/graphql/resolver.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/graphql/resolver.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/graphql/resolver.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/graphql/query_parser.cpp.o -c /home/ipsalmy/Test/graphQL/src/graphql/query_parser.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/graphql/query_parser.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/graphql/query_parser.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/auth/jwt_handler.cpp.o -c /home/ipsalmy/Test/graphQL/src/auth/jwt_handler.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/auth/jwt_handler.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/auth/jwt_handler.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/auth/authorization.cpp.o -c /home/ipsalmy/Test/graphQL/src/auth/authorization.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/auth/authorization.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/auth/authorization.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/resolvers/user_resolvers.cpp.o -c /home/ipsalmy/Test/graphQL/src/resolvers/user_resolvers.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/resolvers/user_resolvers.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/resolvers/user_resolvers.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/resolvers/order_resolvers.cpp.o -c /home/ipsalmy/Test/graphQL/src/resolvers/order_resolvers.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/resolvers/order_resolvers.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/resolvers/order_resolvers.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/resolvers/admin_resolvers.cpp.o -c /home/ipsalmy/Test/graphQL/src/resolvers/admin_resolvers.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/resolvers/admin_resolvers.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/resolvers/admin_resolvers.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/business/cart_manager.cpp.o -c /home/ipsalmy/Test/graphQL/src/business/cart_manager.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/business/cart_manager.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/business/cart_manager.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/business/payment_processor.cpp.o -c /home/ipsalmy/Test/graphQL/src/business/payment_processor.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/business/payment_processor.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/business/payment_processor.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/business/inventory_manager.cpp.o -c /home/ipsalmy/Test/graphQL/src/business/inventory_manager.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/business/inventory_manager.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/business/inventory_manager.cpp.o"
+},
+{
+  "directory": "/home/ipsalmy/Test/graphQL/build",
+  "command": "/usr/bin/c++  -I/usr/include/postgresql -I/home/ipsalmy/Test/graphQL/include -std=gnu++17 -o CMakeFiles/bookstore-api.dir/src/utils/webhook_manager.cpp.o -c /home/ipsalmy/Test/graphQL/src/utils/webhook_manager.cpp",
+  "file": "/home/ipsalmy/Test/graphQL/src/utils/webhook_manager.cpp",
+  "output": "CMakeFiles/bookstore-api.dir/src/utils/webhook_manager.cpp.o"
+}
+]

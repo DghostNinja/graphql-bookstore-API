@@ -1,0 +1,7 @@
+/home/ipsalmy/Test/graphQL/build/CMakeFiles/bookstore-api.dir
+/home/ipsalmy/Test/graphQL/build/CMakeFiles/edit_cache.dir
+/home/ipsalmy/Test/graphQL/build/CMakeFiles/rebuild_cache.dir
+/home/ipsalmy/Test/graphQL/build/CMakeFiles/list_install_components.dir
+/home/ipsalmy/Test/graphQL/build/CMakeFiles/install.dir
+/home/ipsalmy/Test/graphQL/build/CMakeFiles/install/local.dir
+/home/ipsalmy/Test/graphQL/build/CMakeFiles/install/strip.dir
