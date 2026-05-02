@@ -584,6 +584,27 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         response << "{\"name\":\"testWebhook\"},";
         response << "{\"name\":\"logout\"}";
         response << "]}";
+        response << "},";
+        
+        response << "\"subscriptionType\":null,";
+        response << "\"directives\":[],";
+        response << "\"types\":[";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"String\"},";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"Int\"},";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"Float\"},";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"Boolean\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Query\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Mutation\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"User\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Book\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Author\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Order\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Cart\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Review\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Webhook\"},";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"AuthPayload\"}";
+        response << "]";
+        
         response << "}";
         firstField = false;
     }

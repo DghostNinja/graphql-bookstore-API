@@ -85,6 +85,18 @@ class BookstoreMCPClient {
     return this._execute(query);
   }
 
+  async forgotPassword(username, newPassword) {
+    const query = `
+      mutation {
+        forgotPassword(username: "${username}", newPassword: "${newPassword}") {
+          success
+          message
+        }
+      }
+    `;
+    return this._execute(query);
+  }
+
   async me() {
     const query = `
       query Me {
@@ -450,6 +462,18 @@ const tools = [
     },
   },
   {
+    name: 'bookstore_forgot_password',
+    description: 'Reset a user password - requires username and newPassword. WARNING: No authentication required - security vulnerability for testing',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        username: { type: 'string', description: 'Username to reset password for' },
+        newPassword: { type: 'string', description: 'New password to set' },
+      },
+      required: ['username', 'newPassword'],
+    },
+  },
+  {
     name: 'bookstore_register',
     description: 'Register a new user account',
     inputSchema: {
@@ -718,6 +742,8 @@ async function handleToolCall(toolName, args) {
     switch (toolName) {
       case 'bookstore_login':
         return await client.login(args.username, args.password);
+      case 'bookstore_forgot_password':
+        return await client.forgotPassword(args.username, args.newPassword);
       case 'bookstore_register':
         return await client.register(args.username, args.firstName, args.lastName, args.password);
       case 'bookstore_me':
