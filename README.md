@@ -226,6 +226,14 @@ To make this production-ready, you would need to:
 9. Add HTTPS/TLS support
 10. Implement request size limits
 
+## Support This Project
+
+If you find this API useful for learning GraphQL security, consider supporting its hosting costs:
+
+[![Donate via Flutterwave](https://img.shields.io/badge/Donate-Support%20the%20Server-green?style=for-the-badge)](https://flutterwave.com/pay/r7srcerzvxsw)
+
+Any amount helps keep this API running for security researchers and students.
+
 ## Contributing
 
 Contributions are welcome! This is a learning environment where the structure and patterns can be adapted for production use with proper security measures.

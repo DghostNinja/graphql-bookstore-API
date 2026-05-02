@@ -1061,6 +1061,14 @@ string generateLandingHTML() {
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             line-height: 1.6;
         }
+        .footer-refs a {
+            color: #4ade80;
+            text-decoration: none;
+        }
+        .footer-refs a:hover {
+            color: #22c55e;
+            text-decoration: underline;
+        }
         .footer-version {
             display: inline-block;
             background: rgba(74, 222, 128, 0.1);
@@ -1336,6 +1344,7 @@ string generateLandingHTML() {
                     <a href="#" class="sidebar-item sub-item" onclick="showSection('vulnerabilities')">Vulnerabilities</a>
                     <a href="#" class="sidebar-item sub-item" onclick="showSection('mcp-docs')">MCP Server</a>
                     <a href="#" class="sidebar-item sub-item" onclick="showSection('feedback')">Feedback</a>
+                    <a href="#" class="sidebar-item sub-item" onclick="showSection('support')">Support</a>
                 </div>
             </div>
         </div>
@@ -2715,7 +2724,61 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
                     </div>
                 </div>
 
-                <!-- Feedback Section -->
+                <!-- Support Section -->
+                <div id="support" class="doc-section glass-panel">
+                    <div class="section-title">Support This Project</div>
+                    
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px; line-height: 1.6;">
+                        This API is maintained as a free resource for security researchers and students learning GraphQL security. 
+                        Running a server costs money, and your support helps keep it online for everyone.
+                    </p>
+
+                    <div class="support-box" style="
+                        background: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%);
+                        border: 1px solid rgba(74, 222, 128, 0.3);
+                        border-radius: 16px;
+                        padding: 30px;
+                        text-align: center;
+                        margin: 20px 0;
+                    ">
+                        <p style="color: #4ade80; font-size: 1.1rem; margin-bottom: 20px;">
+                            Help keep this API running!
+                        </p>
+                        <a href="https://flutterwave.com/pay/r7srcerzvxsw" 
+                           target="_blank"
+                           style="
+                               display: inline-block;
+                               background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+                               color: #000;
+                               font-weight: 700;
+                               padding: 15px 30px;
+                               border-radius: 12px;
+                               text-decoration: none;
+                               font-size: 1.1rem;
+                               transition: transform 0.2s, box-shadow 0.2s;
+                           "
+                           onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 30px rgba(74,222,128,0.5)';"
+                           onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+                            Donate via Flutterwave
+                        </a>
+                        <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 15px;">
+                            Any amount helps. Thank you for your support!
+                        </p>
+                    </div>
+
+                    <div class="doc-nav">
+                        <a href="#" class="doc-nav-btn prev" onclick="showSection('feedback'); return false;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                            Previous
+                        </a>
+                        <a href="#" class="doc-nav-btn next" onclick="return false;" style="visibility: hidden;">
+                            Next
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                </div>
                 <div id="feedback" class="doc-section glass-panel">
                     <div class="section-title">Feedback & Comments</div>
                     
@@ -2776,6 +2839,10 @@ API_URL=https://api.graphqlbook.org/graphql npm start</pre>
                 Built with C++17 &bull; PostgreSQL Database &bull; JWT Authentication &bull; RESTful webhook integration
                 <br>
                 &copy; 2026 GraphQL Bookstore. All rights reserved.
+                <span style="margin: 0 10px;">|</span>
+                <a href="https://flutterwave.com/pay/r7srcerzvxsw" target="_blank" style="color: #4ade80; text-decoration: none;">
+                    Support with ❤️
+                </a>
             </div>
         </div>
     </footer>
