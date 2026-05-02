@@ -225,28 +225,12 @@
             ],
             "body": {
               "mode": "raw",
-"raw": "{\"query\":\"mutation { login(username: \\\"{{username}}\\\", password: \\\"{{password}}\\\") { success token user { id username role firstName lastName } } }\"}"
+              "raw": "{\"query\":\"mutation { login(username: \\\"{{username}}\\\", password: \\\"{{password}}\\\") { success token user { id username role firstName lastName } } }\"}"
             }
-          },
-          {
-            "name": "Forgot Password",
-            "request": {
-              "method": "POST",
-              "url": "{{base_url}}/graphql",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": {
-                "mode": "raw",
-                "raw": "{\"query\":\"mutation { forgotPassword(username: \\\"{{username}}\\\", newPassword: \\\"{{password}}\\\") { success message } }\"}"
-              }
-            }
-          },
-          {
-            "name": "Get Current User (Me)",
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
           "request": {
             "method": "POST",
             "url": "{{base_url}}/graphql",
