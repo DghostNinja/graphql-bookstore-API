@@ -571,6 +571,7 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         response << "\"fields\":[";
         response << "{\"name\":\"register\"},";
         response << "{\"name\":\"login\"},";
+        response << "{\"name\":\"forgotPassword\"},";
         response << "{\"name\":\"updateProfile\"},";
         response << "{\"name\":\"addToCart\"},";
         response << "{\"name\":\"removeFromCart\"},";
@@ -1407,6 +1408,57 @@ std::string handleMutation(const std::string& query, User& currentUser) {
             response << "\"login\":{";
             response << "\"success\":false,";
             response << "\"message\":\"Missing required fields: username, password\"";
+            response << "}";
+            firstField = false;
+        }
+    }
+
+    if (query.find("forgotPassword(") != std::string::npos) {
+        std::string username = extractValue(query, "username");
+        std::string newPassword = extractValue(query, "newPassword");
+
+        std::cerr << "[FORGOTPASSWORD] username='" << username << "'" << std::endl;
+
+        if (!username.empty() && !newPassword.empty()) {
+            std::string checkSql = "SELECT id FROM users WHERE username = '" + username + "'";
+            PGresult* checkRes = PQexec(dbConn, checkSql.c_str());
+
+            if (PQresultStatus(checkRes) == PGRES_TUPLES_OK && PQntuples(checkRes) > 0) {
+                std::string userId = PQgetvalue(checkRes, 0, 0);
+                std::string updateSql = "UPDATE users SET password_hash = $1 WHERE id = $2";
+                const char* paramValues[2] = {newPassword.c_str(), userId.c_str()};
+                PGresult* updRes = PQexecParams(dbConn, updateSql.c_str(), 2, nullptr, paramValues, nullptr, nullptr, 0);
+
+                if (PQresultStatus(updRes) == PGRES_COMMAND_OK) {
+                    if (!firstField) response << ",";
+                    response << "\"forgotPassword\":{";
+                    response << "\"success\":true,";
+                    response << "\"message\":\"Password reset successful. Use your new password to login.\"";
+                    response << "}";
+                    firstField = false;
+                } else {
+                    if (!firstField) response << ",";
+                    response << "\"forgotPassword\":{";
+                    response << "\"success\":false,";
+                    response << "\"message\":\"Database error\"";
+                    response << "}";
+                    firstField = false;
+                }
+                PQclear(updRes);
+            } else {
+                if (!firstField) response << ",";
+                response << "\"forgotPassword\":{";
+                response << "\"success\":true,";
+                response << "\"message\":\"If the username exists, password reset instructions have been sent.\"";
+                response << "}";
+                firstField = false;
+            }
+            PQclear(checkRes);
+        } else {
+            if (!firstField) response << ",";
+            response << "\"forgotPassword\":{";
+            response << "\"success\":false,";
+            response << "\"message\":\"Missing required fields: username, newPassword\"";
             response << "}";
             firstField = false;
         }
