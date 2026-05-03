@@ -532,7 +532,7 @@ std::string webhookToJson(const Webhook& webhook, const std::string& query) {
 
 // GraphQL Handler Functions
 std::string handleQuery(const std::string& query, const User& currentUser) {
-    std::stringstream response;
+std::stringstream response;
     response << "{\"data\":{";
     bool firstField = true;
 
@@ -540,69 +540,161 @@ std::string handleQuery(const std::string& query, const User& currentUser) {
         std::cerr << "[QUERY] __schema (introspection)" << std::endl;
         if (!firstField) response << ",";
         response << "\"__schema\":{";
+        
         response << "\"queryType\":{";
         response << "\"name\":\"Query\",";
         response << "\"fields\":[";
-        response << "{\"name\":\"me\"},";
-        response << "{\"name\":\"books\"},";
-        response << "{\"name\":\"book\"},";
-        response << "{\"name\":\"cart\"},";
-        response << "{\"name\":\"orders\"},";
-        response << "{\"name\":\"reviews\"},";
-        response << "{\"name\":\"myReviews\"},";
-        response << "{\"name\":\"webhooks\"},";
-        response << "{\"name\":\"_internalUserSearch\"},";
-        response << "{\"name\":\"_internalUserCart\"},";
-        response << "{\"name\":\"_fetchExternalResource\"},";
-        response << "{\"name\":\"_searchAdvanced\"},";
-        response << "{\"name\":\"_adminStats\"},";
-        response << "{\"name\":\"_adminAllOrders\"},";
-        response << "{\"name\":\"_adminAllPayments\"},";
-        response << "{\"name\":\"_authorProfile\"},";
-        response << "{\"name\":\"_batchQuery\"},";
-        response << "{\"name\":\"processXMLData\"},";
-        response << "{\"name\":\"applyCoupon\"},";
-        response << "{\"name\":\"decodeJWT\"},";
-        response << "{\"name\":\"manageCache\"},";
-        response << "{\"name\":\"handleRecursiveQuery\"}";
+        response << "{\"name\":\"me\",\"description\":\"Get the currently authenticated user\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"books\",\"description\":\"List all books with optional search and category filter\",\"type\":{\"name\":\"Book\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"book\",\"description\":\"Get a specific book by ID\",\"type\":{\"name\":\"Book\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"cart\",\"description\":\"Get the current user's shopping cart\",\"type\":{\"name\":\"Cart\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"orders\",\"description\":\"Get orders for the current user\",\"type\":{\"name\":\"Order\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"reviews\",\"description\":\"Get all book reviews\",\"type\":{\"name\":\"Review\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"myReviews\",\"description\":\"Get current user's reviews\",\"type\":{\"name\":\"Review\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"webhooks\",\"description\":\"Get user's registered webhooks\",\"type\":{\"name\":\"Webhook\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"_internalUserSearch\",\"description\":\"Internal user search endpoint\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"_internalUserCart\",\"description\":\"Internal user cart lookup\",\"type\":{\"name\":\"Cart\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"_fetchExternalResource\",\"description\":\"Fetch external resource by URL\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"_searchAdvanced\",\"description\":\"Advanced book search with SQL patterns\",\"type\":{\"name\":\"Book\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"_adminStats\",\"description\":\"Admin statistics dashboard\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"_adminAllOrders\",\"description\":\"Admin view of all orders\",\"type\":{\"name\":\"Order\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"_adminAllPayments\",\"description\":\"Admin view of all payments\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"_authorProfile\",\"description\":\"Get author profile with sensitive data\",\"type\":{\"name\":\"Author\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"_batchQuery\",\"description\":\"GraphQL batch query for efficiency\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"processXMLData\",\"description\":\"Process XML data for webhook subscriptions\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"applyCoupon\",\"description\":\"Apply coupon code to cart\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"decodeJWT\",\"description\":\"Decode and validate JWT tokens\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"manageCache\",\"description\":\"Manage HTTP caching headers\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"handleRecursiveQuery\",\"description\":\"Handle deeply nested recursive queries\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
         response << "]},";
+        
         response << "\"mutationType\":{";
         response << "\"name\":\"Mutation\",";
         response << "\"fields\":[";
-        response << "{\"name\":\"register\"},";
-        response << "{\"name\":\"login\"},";
-        response << "{\"name\":\"forgotPassword\"},";
-        response << "{\"name\":\"updateProfile\"},";
-        response << "{\"name\":\"addToCart\"},";
-        response << "{\"name\":\"removeFromCart\"},";
-        response << "{\"name\":\"createOrder\"},";
-        response << "{\"name\":\"checkout\"},";
-        response << "{\"name\":\"cancelOrder\"},";
-        response << "{\"name\":\"createReview\"},";
-        response << "{\"name\":\"deleteReview\"},";
-        response << "{\"name\":\"registerWebhook\"},";
-        response << "{\"name\":\"testWebhook\"},";
-        response << "{\"name\":\"logout\"}";
+        response << "{\"name\":\"register\",\"description\":\"Register a new user account\",\"type\":{\"name\":\"AuthPayload\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"login\",\"description\":\"Login and authenticate to get JWT token\",\"type\":{\"name\":\"AuthPayload\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"forgotPassword\",\"description\":\"Request password reset\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"updateProfile\",\"description\":\"Update user profile information\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"addToCart\",\"description\":\"Add a book to shopping cart\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"removeFromCart\",\"description\":\"Remove a book from cart\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"createOrder\",\"description\":\"Create an order from cart without payment\",\"type\":{\"name\":\"Order\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"checkout\",\"description\":\"Process payment and create order\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"cancelOrder\",\"description\":\"Cancel an existing order\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"createReview\",\"description\":\"Create a book review\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"deleteReview\",\"description\":\"Delete a book review\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"registerWebhook\",\"description\":\"Register a webhook URL\",\"type\":{\"name\":\"Webhook\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"testWebhook\",\"description\":\"Test a webhook endpoint\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"logout\",\"description\":\"Logout and clear session\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
         response << "]}";
         response << "},";
         
         response << "\"subscriptionType\":null,";
         response << "\"directives\":[],";
         response << "\"types\":[";
-        response << "{\"kind\":\"SCALAR\",\"name\":\"String\"},";
-        response << "{\"kind\":\"SCALAR\",\"name\":\"Int\"},";
-        response << "{\"kind\":\"SCALAR\",\"name\":\"Float\"},";
-        response << "{\"kind\":\"SCALAR\",\"name\":\"Boolean\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Query\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Mutation\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"User\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Book\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Author\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Order\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Cart\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Review\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"Webhook\"},";
-        response << "{\"kind\":\"OBJECT\",\"name\":\"AuthPayload\"}";
+        
+        response << "{\"kind\":\"SCALAR\",\"name\":\"String\",\"description\":\"A UTF-8 encoded string\"},";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"Int\",\"description\":\"A signed 32-bit integer\"},";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"Float\",\"description\":\"A signed double-precision floating-point value\"},";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"description\":\"A boolean value\"},";
+        response << "{\"kind\":\"SCALAR\",\"name\":\"ID\",\"description\":\"A unique identifier\"},";
+        
+        response << ",";
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Query\",\"description\":\"The root query type for the GraphQL API\",\"fields\":[";
+        response << "{\"name\":\"me\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"books\",\"type\":{\"name\":\"Book\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"book\",\"type\":{\"name\":\"Book\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"cart\",\"type\":{\"name\":\"Cart\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"orders\",\"type\":{\"name\":\"Order\",\"kind\":\"OBJECT\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Mutation\",\"description\":\"The root mutation type for the GraphQL API\",\"fields\":[";
+        response << "{\"name\":\"register\",\"type\":{\"name\":\"AuthPayload\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"login\",\"type\":{\"name\":\"AuthPayload\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"addToCart\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"checkout\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"createReview\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"User\",\"description\":\"Represents a user account in the system\",\"fields\":[";
+        response << "{\"name\":\"id\",\"description\":\"Unique user identifier\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"username\",\"description\":\"The user's login username\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"firstName\",\"description\":\"User's first name\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"lastName\",\"description\":\"User's last name\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"email\",\"description\":\"User's email address\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"role\",\"description\":\"User's role (admin, staff, or user)\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"phone\",\"description\":\"User's phone number\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"address\",\"description\":\"User's street address\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"city\",\"description\":\"User's city\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"state\",\"description\":\"User's state\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"zipCode\",\"description\":\"User's zip code\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"country\",\"description\":\"User's country\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Book\",\"description\":\"Represents a book in the bookstore catalog\",\"fields\":[";
+        response << "{\"name\":\"id\",\"description\":\"Unique identifier for the book\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"title\",\"description\":\"The display title of the book\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"isbn\",\"description\":\"International Standard Book Number\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"description\",\"description\":\"Book description and synopsis\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"price\",\"description\":\"Price in USD\",\"type\":{\"name\":\"Float\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"stockQuantity\",\"description\":\"Available stock count\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"author\",\"description\":\"The book's author\",\"type\":{\"name\":\"Author\",\"kind\":\"OBJECT\"}},";
+        response << "{\"name\":\"category\",\"description\":\"Book category\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"coverImage\",\"description\":\"URL to cover image\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"publishedDate\",\"description\":\"Publication date\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Author\",\"description\":\"Represents a book author\",\"fields\":[";
+        response << "{\"name\":\"id\",\"description\":\"Unique author identifier\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"firstName\",\"description\":\"Author's first name\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"lastName\",\"description\":\"Author's last name\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"bio\",\"description\":\"Author biography\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"email\",\"description\":\"Author email\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Order\",\"description\":\"Represents a customer order\",\"fields\":[";
+        response << "{\"name\":\"id\",\"description\":\"Unique order identifier\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"orderNumber\",\"description\":\"Human-readable order number\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"status\",\"description\":\"Order status (pending, processing, completed, cancelled)\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"totalAmount\",\"description\":\"Order total in USD\",\"type\":{\"name\":\"Float\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"paymentStatus\",\"description\":\"Payment status\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"shippingAddress\",\"description\":\"Shipping address\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"createdAt\",\"description\":\"Order creation timestamp\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Cart\",\"description\":\"Represents a shopping cart\",\"fields\":[";
+        response << "{\"name\":\"id\",\"description\":\"Unique cart identifier\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"userId\",\"description\":\"Owner's user ID\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"items\",\"description\":\"Items in the cart\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"subtotal\",\"description\":\"Cart subtotal before tax\",\"type\":{\"name\":\"Float\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"tax\",\"description\":\"Tax amount\",\"type\":{\"name\":\"Float\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"total\",\"description\":\"Cart total with tax\",\"type\":{\"name\":\"Float\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Review\",\"description\":\"Represents a book review\",\"fields\":[";
+        response << "{\"name\":\"id\",\"description\":\"Unique review identifier\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"userId\",\"description\":\"Reviewer's user ID\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"bookId\",\"description\":\"Book being reviewed\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"rating\",\"description\":\"Rating from 1-5 stars\",\"type\":{\"name\":\"Int\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"comment\",\"description\":\"Review comment text\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"createdAt\",\"description\":\"Review creation timestamp\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"Webhook\",\"description\":\"Represents a webhook subscription\",\"fields\":[";
+        response << "{\"name\":\"id\",\"description\":\"Unique webhook identifier\",\"type\":{\"name\":\"ID\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"url\",\"description\":\"Webhook callback URL\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"events\",\"description\":\"Subscribed event types\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"secret\",\"description\":\"Webhook secret for signing\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"isActive\",\"description\":\"Whether webhook is active\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"createdAt\",\"description\":\"Webhook creation timestamp\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}}";
+        response << "]},";
+        
+        response << "{\"kind\":\"OBJECT\",\"name\":\"AuthPayload\",\"description\":\"Authentication response with token\",\"fields\":[";
+        response << "{\"name\":\"success\",\"description\":\"Login success status\",\"type\":{\"name\":\"Boolean\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"token\",\"description\":\"JWT authentication token\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"message\",\"description\":\"Response message\",\"type\":{\"name\":\"String\",\"kind\":\"SCALAR\"}},";
+        response << "{\"name\":\"user\",\"description\":\"Authenticated user data\",\"type\":{\"name\":\"User\",\"kind\":\"OBJECT\"}}";
+        response << "]}";
+        
         response << "]";
         
         response << "}";
