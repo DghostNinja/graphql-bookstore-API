@@ -1006,6 +1006,70 @@ string generateLandingHTML() {
             font-weight: 600;
             color: rgba(255, 255, 255, 0.8);
         }
+        .news-ticker {
+            background: linear-gradient(90deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .news-ticker::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.15), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+        .news-label {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-right: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .news-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .news-text a {
+            color: #ffd700;
+            text-decoration: none;
+            border-bottom: 1px dashed #ffd700;
+            transition: all 0.2s ease;
+        }
+        .news-text a:hover {
+            color: #ffed4a;
+            border-bottom-style: solid;
+        }
+        .news-emoji {
+            display: inline-block;
+            animation: bounce 1s ease-in-out infinite;
+            margin-right: 6px;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
         footer {
             text-align: center;
             padding: 30px 20px;
@@ -1376,6 +1440,15 @@ string generateLandingHTML() {
                 <span class="method-badge method-get">GET</span> Queries only &nbsp;|&nbsp;
                 <span class="method-info-text">Use with online GraphQL tools, Postman, curl, etc.</span>
             </div>
+</div>
+
+        <div class="news-ticker">
+            <span class="news-label">New</span>
+            <span class="news-text">
+                <span class="news-emoji">&#127881;</span>
+                <strong>Big News!</strong> We now accept <strong>Vulnbank virtual cards</strong> for seamless checkout. 
+                Get your free test card at <a href="https://vulnbank.org" target="_blank">vulnbank.org</a> and start shopping!
+            </span>
         </div>
 
         <div class="vuln-slideshow">

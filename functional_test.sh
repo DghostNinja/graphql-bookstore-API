@@ -91,7 +91,7 @@ echo ""
 echo "=== 9. Checkout: Pay ==="
 RESPONSE=$(curl -s -X POST "$API_URL/graphql" -H 'Content-Type: application/json' \
     -H "Authorization: Bearer $TOKEN" \
-    -d '{"query":"mutation { checkout(cardNumber: \"4111111111111111\", expiry: \"12/25\", cvv: \"123\") { success orderId totalAmount } }"}')
+    -d '{"query":"mutation { checkout(cardNumber: \"8763259044315935\", expiry: \"05/27\", cvv: \"034\") { success orderId totalAmount } }"}')
 echo "$RESPONSE" | grep -q '"success":true' && pass "Checkout with payment" || fail "Checkout"
 
 echo ""

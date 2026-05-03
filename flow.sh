@@ -427,7 +427,7 @@ echo "=========================================="
 echo "  STEP 17: CHECKOUT (PAYMENT)            "
 echo "=========================================="
 
-create_test_file /tmp/flow_purchase.json '{"query":"mutation { checkout(cardNumber: \"4111111111111111\", expiry: \"12/25\", cvv: \"123\") { success orderId totalAmount } }"}'
+create_test_file /tmp/flow_purchase.json '{"query":"mutation { checkout(cardNumber: \"8763259044315935\", expiry: \"05/27\", cvv: \"034\") { success orderId totalAmount } }"}'
 
 echo -e "${BLUE}Request:${NC} Checkout with payment"
 RESPONSE=$(api_call /tmp/flow_purchase.json "$TOKEN")

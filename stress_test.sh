@@ -61,7 +61,7 @@ curl -s -X POST "$API_URL" -H 'Content-Type: application/json' -H "Authorization
 
 echo -e "\n\n10. Checkout:"
 curl -s -X POST "$API_URL" -H 'Content-Type: application/json' -H "Authorization: Bearer $TOKEN" \
-    -d '{"query":"mutation { checkout(cardNumber: \"4111111111111111\", expiry: \"12/25\", cvv: \"123\") { success orderId } }"}'
+    -d '{"query":"mutation { checkout(cardNumber: \"8763259044315935\", expiry: \"05/27\", cvv: \"034\") { success orderId } }"}'
 
 echo -e "\n\n11. Update Profile:"
 curl -s -X POST "$API_URL" -H 'Content-Type: application/json' -H "Authorization: Bearer $TOKEN" \
