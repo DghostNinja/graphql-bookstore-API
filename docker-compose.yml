@@ -19,6 +19,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   api:
     build:
@@ -37,6 +38,7 @@ services:
       DB_CONNECTION_STRING: "dbname=bookstore_db user=bookstore_user password=bookstore_password host=postgres port=5432"
       JWT_SECRET: "CHANGE_ME_IN_PRODUCTION_real_jwt_secret_key_2024"
       PORT: "4000"
+    restart: unless-stopped
 
 networks:
   bookstore-network:
