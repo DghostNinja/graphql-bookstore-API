@@ -1,1 +1,0 @@
-{"query":"mutation { login(username: \"admin\", password: \"password123\") { success token } }"}
